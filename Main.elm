@@ -115,7 +115,7 @@ update msg model =
 
         KeyUp 13 ->
             if not (String.isEmpty model.url) && not (String.isEmpty model.currentNote.text) then
-                update (AddNote model.currentNote) { model | currentNote = Note 0 "" }
+                update (AddNote model.currentNote) { model | currentNote = Note model.timeStamp "" }
             else
                 ( model, Cmd.none )
 
@@ -141,13 +141,39 @@ update msg model =
             ( model, Cmd.none )
 
 
+formatSeconds : TimeStamp -> String
+formatSeconds seconds =
+    let
+        h =
+            seconds // 3600
+
+        m =
+            (seconds % 3600) // 60
+
+        s =
+            seconds % 60
+    in
+        if h == 0 then
+            toString m ++ ":" ++ twoDigit s
+        else
+            toString h ++ ":" ++ twoDigit m ++ ":" ++ twoDigit s
+
+
+twoDigit : TimeStamp -> String
+twoDigit n =
+    if n < 10 then
+        "0" ++ toString n
+    else
+        toString n
+
+
 view : Model -> Html Msg
 view model =
     div [ dir "rtl" ]
         [ p [] [ text "url" ]
         , input [ onInput EditUrl, value model.url ] []
         , p [] [ text "new note" ]
-        , text <| toString <| model.currentNote.timeStamp
+        , text <| formatSeconds <| model.currentNote.timeStamp
         , input [ onInput SetCurrentNoteText, value model.currentNote.text ] []
         , h2 [] [ text "notes" ]
         , model.notes |> List.map noteEntry |> div []
@@ -156,7 +182,7 @@ view model =
 
 noteEntry : Note -> Html msg
 noteEntry { timeStamp, text } =
-    p [] [ Html.text <| toString timeStamp ++ " " ++ text ]
+    p [] [ Html.text <| formatSeconds timeStamp ++ " " ++ text ]
 
 
 main : Program Never Model Msg

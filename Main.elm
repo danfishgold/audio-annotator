@@ -1,8 +1,8 @@
 port module Main exposing (..)
 
 import Html exposing (Html, program)
-import Html exposing (div, input, p, h2, text)
-import Html.Events exposing (onInput)
+import Html exposing (div, input, p, b, span, h2, text)
+import Html.Events exposing (onInput, onClick)
 import Html.Attributes exposing (dir, value)
 import Keyboard exposing (KeyCode)
 
@@ -30,6 +30,7 @@ type Msg
     | SetCurrentNoteText String
     | SetCurrentNoteTime TimeStamp
     | AddNote Note
+    | DeleteNote Int
     | SetTimeStamp TimeStamp
     | KeyUp KeyCode
 
@@ -68,6 +69,11 @@ subscriptions model =
         , timeStamp SetTimeStamp
         , isReady IsReady
         ]
+
+
+listRemove : Int -> List a -> List a
+listRemove idx lst =
+    List.take idx lst ++ List.drop (idx + 1) lst
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -112,6 +118,9 @@ update msg model =
 
         AddNote newNote ->
             ( { model | notes = newNote :: model.notes }, Cmd.none )
+
+        DeleteNote index ->
+            ( { model | notes = listRemove index model.notes }, Cmd.none )
 
         KeyUp 13 ->
             if not (String.isEmpty model.url) && not (String.isEmpty model.currentNote.text) then
@@ -176,13 +185,27 @@ view model =
         , text <| formatSeconds <| model.currentNote.timeStamp
         , input [ onInput SetCurrentNoteText, value model.currentNote.text ] []
         , h2 [] [ text "notes" ]
-        , model.notes |> List.map noteEntry |> div []
+        , model.notes |> List.indexedMap noteEntry |> List.reverse |> div []
         ]
 
 
-noteEntry : Note -> Html msg
-noteEntry { timeStamp, text } =
-    p [] [ Html.text <| formatSeconds timeStamp ++ " " ++ text ]
+noteEntry : Int -> Note -> Html Msg
+noteEntry index note =
+    let
+        time =
+            span [] [ text <| formatSeconds note.timeStamp ]
+
+        content =
+            if String.startsWith "!" note.text then
+                b [] [ text note.text ]
+            else
+                span [] [ text note.text ]
+
+        remove =
+            -- span [ onClick <| DeleteNote index ] [ text "מחק" ]
+            span [] []
+    in
+        p [] [ time, text " ", content, text " ", remove ]
 
 
 main : Program Never Model Msg

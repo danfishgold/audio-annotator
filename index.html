@@ -3,9 +3,49 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-  <div></div>
+  <audio controls id="audio"></audio>
+  <div id="main"></div>
   <script src="elm.js"></script>
   <script>
-    Elm.Main.fullscreen()
+
+    var audio = document.getElementById('audio')
+    var node = document.getElementById('main')
+    var app = Elm.Main.embed(node)
+
+    app.ports.pauseUnpause.subscribe(function() {
+      if (audio.paused) {
+        console.log('unpause')
+        audio.play()
+      } else {
+        console.log('pause')
+        audio.pause()
+      }
+    })
+
+    app.ports.seek.subscribe(function(amount) {
+        console.log('move playhead by ' + amount + ' seconds')
+      audio.currentTime += amount
+    })
+
+    app.ports.setUrl.subscribe(function(url) {
+      console.log('set url to ' + url)
+      audio.src = url
+    })
+
+    audio.ontimeupdate = function() {
+      console.log('updated time: ' + audio.currentTime)
+      app.ports.timeStamp.send(Math.floor(audio.currentTime))
+    }
+
+    audio.oncanplay = function() {
+      console.log('isReady = true')
+      app.ports.isReady.send(true)
+    }
+
+    audio.onerror = function() {
+      console.log('isReady = false')
+      app.ports.isReady.send(false)
+    }
+
   </script>
 </body>

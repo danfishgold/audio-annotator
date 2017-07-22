@@ -291,7 +291,7 @@ configView locale model =
         bigSeekInput =
             seekInput (toString model.config.bigSeek)
                 [ 30, 60, 120 ]
-                (ConfigMsg << Config.SetSmallSeek)
+                (ConfigMsg << Config.SetBigSeek)
 
         localeSelect =
             span [ locale |> L10N.next |> Config.SetLocale |> ConfigMsg |> onClick ] [ Assets.globe "3em" ]

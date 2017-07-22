@@ -2,7 +2,7 @@ port module Main exposing (..)
 
 import Html exposing (Html, program)
 import Html exposing (div, input, p, b, span, h2, h5, text, audio, ul, li)
-import Html.Attributes exposing (value, src, id, controls, style, class, dir, selected, hidden, type_)
+import Html.Attributes exposing (value, src, id, controls, style, class, dir, selected, hidden, type_, accept)
 import Html.Events exposing (onClick, onInput)
 import Keyboard exposing (KeyCode)
 import TimeStamp exposing (TimeStamp)
@@ -374,6 +374,7 @@ fileInput : Locale -> Model -> Html Msg
 fileInput locale model =
     input
         [ type_ "file"
+        , accept "audio/*"
         , id "file-input"
         , Html.Events.on "change" (Json.succeed SetFileSource)
         ]

@@ -15,6 +15,7 @@ import Bootstrap.Table as Table exposing (th, tr, td)
 import Bootstrap.Form.InputGroup as InputGroup
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Select as Select
+import Assets
 
 
 type alias Model =
@@ -228,7 +229,7 @@ configView locale model =
             seekInput (toString model.config.bigSeek) [ 30, 60, 120 ] (ConfigMsg << Config.SetSmallSeek)
 
         localeSelect =
-            span [ locale |> L10N.next |> Config.SetLocale |> ConfigMsg |> onClick ] [ text "lang" ]
+            span [ locale |> L10N.next |> Config.SetLocale |> ConfigMsg |> onClick ] [ Assets.globe "3em" ]
     in
         div []
             [ localeSelect

@@ -11,6 +11,8 @@ import Localization as L10N exposing (Locale)
 import Note exposing (Note)
 import Bootstrap.CDN as CDN
 import Bootstrap.Grid as Grid
+import Bootstrap.Grid.Row as Row
+import Bootstrap.Grid.Col as Col
 import Bootstrap.Table as Table exposing (th, tr, td)
 import Bootstrap.Form.InputGroup as InputGroup
 import Bootstrap.Form.Input as Input
@@ -232,53 +234,20 @@ update msg model =
 
 view : Locale -> Model -> Html Msg
 view locale model =
-    let
-        strings =
-            L10N.strings locale
-    in
-        Grid.container [ L10N.dir locale ]
-            [ CDN.stylesheet
-            , configView locale model
-            , InputGroup.config
-                (InputGroup.url
-                    [ Input.onInput EditUrl
-                    , Input.value model.url
-                    , Input.attrs [ dir "ltr" ]
-                    ]
-                )
-                |> L10N.predecessors locale [ InputGroup.span [] [ text strings.fileUrl ] ]
-                |> InputGroup.attrs [ dir "ltr" ]
-                |> InputGroup.view
-            , div [ hidden <| not model.ready ]
-                [ audio [ id "audio", controls False ] []
-                , audioControls locale model "50px"
-                , h2 [] [ text strings.allNotes ]
-                , h5 [] [ text strings.newNote ]
-                , InputGroup.config
-                    (InputGroup.text
-                        [ Input.onInput SetCurrentNoteText
-                        , Input.value model.currentNote.text
-                        , Input.attrs [ L10N.dir locale ]
-                        ]
-                    )
-                    |> L10N.predecessors locale
-                        [ InputGroup.span []
-                            [ text <| TimeStamp.asString model.currentNote.timeStamp ]
-                        ]
-                    |> L10N.successors locale
-                        [ InputGroup.span []
-                            [ text "-"
-                            , text <| TimeStamp.asString (model.remainingTime - model.currentNote.timeStamp + model.timeStamp)
-                            ]
-                        ]
-                    |> InputGroup.attrs [ dir "ltr" ]
-                    |> InputGroup.view
-                , if List.isEmpty model.notes then
-                    text ""
-                  else
-                    table locale model
-                ]
+    Grid.container [ L10N.dir locale ]
+        [ CDN.stylesheet
+        , configView locale model
+        , urlInput locale model
+        , div [ hidden <| not model.ready ]
+            [ audioControls locale model "50px"
+            , h2 [] [ text (L10N.strings locale).allNotes ]
+            , noteInput locale model
+            , if List.isEmpty model.notes then
+                text ""
+              else
+                table locale model
             ]
+        ]
 
 
 configView : Locale -> Model -> Html Msg
@@ -346,6 +315,20 @@ configView locale model =
             ]
 
 
+urlInput : Locale -> Model -> Html Msg
+urlInput locale model =
+    InputGroup.config
+        (InputGroup.url
+            [ Input.onInput EditUrl
+            , Input.value model.url
+            , Input.attrs [ dir "ltr" ]
+            ]
+        )
+        |> L10N.predecessors locale [ InputGroup.span [] [ text (L10N.strings locale).fileUrl ] ]
+        |> InputGroup.attrs [ dir "ltr" ]
+        |> InputGroup.view
+
+
 noUserSelect : List ( String, String )
 noUserSelect =
     [ ( "-webkit-touch-callout", "none" )
@@ -359,15 +342,46 @@ noUserSelect =
 
 audioControls : Locale -> Model -> String -> Html Msg
 audioControls locale model sz =
-    div [ dir "ltr", id "controls", style (( "text-align", "center" ) :: noUserSelect) ]
-        [ span [ onClick (Seek Big Backward) ] [ Assets.previous sz ]
-        , span [ onClick (Seek Small Backward) ] [ Assets.rewind sz ]
-        , if model.paused then
-            span [ onClick PauseUnpause ] [ Assets.play sz ]
-          else
-            span [ onClick PauseUnpause ] [ Assets.pause sz ]
-        , span [ onClick (Seek Small Forward) ] [ Assets.fastForward sz ]
-        , span [ onClick (Seek Big Forward) ] [ Assets.next sz ]
+    div []
+        [ audio [ id "audio", controls False ] []
+        , div [ dir "ltr", id "controls", style (( "text-align", "center" ) :: noUserSelect) ]
+            [ span [ onClick (Seek Big Backward) ] [ Assets.previous sz ]
+            , span [ onClick (Seek Small Backward) ] [ Assets.rewind sz ]
+            , if model.paused then
+                span [ onClick PauseUnpause ] [ Assets.play sz ]
+              else
+                span [ onClick PauseUnpause ] [ Assets.pause sz ]
+            , span [ onClick (Seek Small Forward) ] [ Assets.fastForward sz ]
+            , span [ onClick (Seek Big Forward) ] [ Assets.next sz ]
+            ]
+        ]
+
+
+noteInput : Locale -> Model -> Html Msg
+noteInput locale model =
+    Grid.row [ Row.middleXs ]
+        [ Grid.col [ Col.xs2 ] [ text (L10N.strings locale).newNote ]
+        , Grid.col [ Col.xs10 ]
+            [ InputGroup.config
+                (InputGroup.text
+                    [ Input.onInput SetCurrentNoteText
+                    , Input.value model.currentNote.text
+                    , Input.attrs [ L10N.dir locale ]
+                    ]
+                )
+                |> L10N.predecessors locale
+                    [ InputGroup.span []
+                        [ text <| TimeStamp.asString model.currentNote.timeStamp ]
+                    ]
+                |> L10N.successors locale
+                    [ InputGroup.span []
+                        [ text "-"
+                        , text <| TimeStamp.asString (model.remainingTime - model.currentNote.timeStamp + model.timeStamp)
+                        ]
+                    ]
+                |> InputGroup.attrs [ dir "ltr" ]
+                |> InputGroup.view
+            ]
         ]
 
 

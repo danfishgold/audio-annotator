@@ -13,7 +13,7 @@ type alias Config =
 
 default : Config
 default =
-    { smallSeek = 5
+    { smallSeek = 2
     , bigSeek = 60
     , locale = Hebrew
     }

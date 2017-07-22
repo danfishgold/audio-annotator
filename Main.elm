@@ -276,14 +276,22 @@ configView locale model =
                 ]
                 (options
                     |> List.map toString
-                    |> List.map (\val -> Select.item [ value val, selected <| val == selectedVal ] [ text val ])
+                    |> List.map
+                        (\val ->
+                            Select.item [ value val, selected <| val == selectedVal ]
+                                [ text val ]
+                        )
                 )
 
         smallSeekInput =
-            seekInput (toString model.config.smallSeek) [ 2, 5, 10 ] (ConfigMsg << Config.SetSmallSeek)
+            seekInput (toString model.config.smallSeek)
+                [ 2, 5, 10 ]
+                (ConfigMsg << Config.SetSmallSeek)
 
         bigSeekInput =
-            seekInput (toString model.config.bigSeek) [ 30, 60, 120 ] (ConfigMsg << Config.SetSmallSeek)
+            seekInput (toString model.config.bigSeek)
+                [ 30, 60, 120 ]
+                (ConfigMsg << Config.SetSmallSeek)
 
         localeSelect =
             span [ locale |> L10N.next |> Config.SetLocale |> ConfigMsg |> onClick ] [ Assets.globe "3em" ]

@@ -5,14 +5,8 @@ import Html exposing (div, input, p, b, span, h2, text)
 import Html.Events exposing (onInput, onClick)
 import Html.Attributes exposing (dir, value)
 import Keyboard exposing (KeyCode)
-
-
-type alias TimeStamp =
-    Int
-
-
-type alias Note =
-    { timeStamp : TimeStamp, text : String }
+import TimeStamp exposing (TimeStamp)
+import Note exposing (Note)
 
 
 type alias Model =
@@ -150,62 +144,17 @@ update msg model =
             ( model, Cmd.none )
 
 
-formatSeconds : TimeStamp -> String
-formatSeconds seconds =
-    let
-        h =
-            seconds // 3600
-
-        m =
-            (seconds % 3600) // 60
-
-        s =
-            seconds % 60
-    in
-        if h == 0 then
-            toString m ++ ":" ++ twoDigit s
-        else
-            toString h ++ ":" ++ twoDigit m ++ ":" ++ twoDigit s
-
-
-twoDigit : TimeStamp -> String
-twoDigit n =
-    if n < 10 then
-        "0" ++ toString n
-    else
-        toString n
-
-
 view : Model -> Html Msg
 view model =
     div [ dir "rtl" ]
         [ p [] [ text "url" ]
         , input [ onInput EditUrl, value model.url ] []
         , p [] [ text "new note" ]
-        , text <| formatSeconds <| model.currentNote.timeStamp
+        , text <| TimeStamp.asString model.currentNote.timeStamp
         , input [ onInput SetCurrentNoteText, value model.currentNote.text ] []
         , h2 [] [ text "notes" ]
-        , model.notes |> List.indexedMap noteEntry |> List.reverse |> div []
+        , model.notes |> List.map Note.view |> List.reverse |> div []
         ]
-
-
-noteEntry : Int -> Note -> Html Msg
-noteEntry index note =
-    let
-        time =
-            span [] [ text <| formatSeconds note.timeStamp ]
-
-        content =
-            if String.startsWith "!" note.text then
-                b [] [ text note.text ]
-            else
-                span [] [ text note.text ]
-
-        remove =
-            -- span [ onClick <| DeleteNote index ] [ text "מחק" ]
-            span [] []
-    in
-        p [] [ time, text " ", content, text " ", remove ]
 
 
 main : Program Never Model Msg

@@ -46,7 +46,9 @@
       audio.src = url
 
       audio.ontimeupdate = function() {
-        app.ports.timeStamp.send([Math.floor(audio.currentTime), Math.floor(audio.duration) - Math.floor(audio.currentTime)])
+        var time = Math.floor(audio.currentTime)
+        var duration = Math.floor(audio.duration)
+        app.ports.timeStamp.send([time, duration - time])
       }
 
       audio.onloadedmetadata = function() {

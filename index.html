@@ -48,7 +48,7 @@
         app.ports.timeStamp.send([Math.floor(audio.currentTime), Math.floor(audio.duration) - Math.floor(audio.currentTime)])
       }
 
-      audio.oncanplay = function() {
+      audio.onloadedmetadata = function() {
         app.ports.isReady.send(true)
       }
 

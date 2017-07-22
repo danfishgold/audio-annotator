@@ -346,9 +346,20 @@ configView locale model =
             ]
 
 
+noUserSelect : List ( String, String )
+noUserSelect =
+    [ ( "-webkit-touch-callout", "none" )
+    , ( "-webkit-user-select", "none" )
+    , ( "-khtml-user-select", "none" )
+    , ( "-moz-user-select", "none" )
+    , ( "-ms-user-select", "none" )
+    , ( "user-select", "none" )
+    ]
+
+
 audioControls : Locale -> Model -> String -> Html Msg
 audioControls locale model sz =
-    div [ dir "ltr", style [ ( "text-align", "center" ) ] ]
+    div [ dir "ltr", id "controls", style (( "text-align", "center" ) :: noUserSelect) ]
         [ span [ onClick (Seek Big Backward) ] [ Assets.previous sz ]
         , span [ onClick (Seek Small Backward) ] [ Assets.rewind sz ]
         , if model.paused then

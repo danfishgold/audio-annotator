@@ -2,12 +2,14 @@ module Config exposing (Config, default, Msg(..), update)
 
 import Localization as L10N exposing (Locale(..))
 import Html exposing (Html, div, text)
+import Source exposing (Type(..))
 
 
 type alias Config =
     { smallSeek : Int
     , bigSeek : Int
     , locale : Locale
+    , sourceType : Source.Type
     }
 
 
@@ -16,6 +18,7 @@ default =
     { smallSeek = 2
     , bigSeek = 60
     , locale = Hebrew
+    , sourceType = FileInput
     }
 
 
@@ -23,6 +26,7 @@ type Msg
     = SetSmallSeek Int
     | SetBigSeek Int
     | SetLocale Locale
+    | SetSourceType Source.Type
 
 
 update : Msg -> Config -> Config
@@ -36,6 +40,9 @@ update msg config =
 
         SetLocale locale ->
             { config | locale = locale }
+
+        SetSourceType sourceType ->
+            { config | sourceType = sourceType }
 
 
 view : Locale -> Config -> Html Msg

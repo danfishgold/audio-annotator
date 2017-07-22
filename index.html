@@ -39,11 +39,30 @@
       audio.currentTime = timeStamp
     })
 
+
     app.ports.setUrl.subscribe(function(audioIdAndUrl) {
       var audioId = audioIdAndUrl[0]
       var url = audioIdAndUrl[1]
       var audio = document.getElementById(audioId)
-      audio.src = url
+      initializeAudioWithSource(audio, url)
+    })
+
+    app.ports.setFileSource.subscribe(function(fileInputAndAudio) {
+      var input = document.getElementById(fileInputAndAudio[0])
+      var audio = document.getElementById(fileInputAndAudio[1])
+
+      var file = input.files[0]
+      if (input.files && file) {
+        var reader = new FileReader()
+        reader.onload = function(e) {
+            initializeAudioWithSource(audio, e.target.result)
+        }
+        reader.readAsDataURL(file)
+      }
+    })
+
+    function initializeAudioWithSource(audio, src) {
+      audio.src = src
 
       audio.ontimeupdate = function() {
         var time = Math.floor(audio.currentTime)
@@ -66,8 +85,9 @@
       audio.onplay = function() {
         app.ports.played.send(null)
       }
-    })
+    }
 
+    
     
 
   </script>

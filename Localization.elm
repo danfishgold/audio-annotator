@@ -72,7 +72,9 @@ type alias Strings =
 
 type alias ConfigStrings =
     { title : String
-    , firstEnterUrl : String
+    , firstYouMustSupply : String
+    , audioUrl : String
+    , localFile : String
     , onLeftRightArrows : String
     , onLeftRightButtons : String
     , seconds : String
@@ -100,7 +102,9 @@ hebrewStrings =
     , note = "הערה"
     , config =
         { title = "הוראות / הגדרות"
-        , firstEnterUrl = "קודם כל צריך לספק את הלינק לקובץ"
+        , firstYouMustSupply = "קודם כל צריך לספק "
+        , audioUrl = "לינק לקובץ"
+        , localFile = "קובץ מקומי"
         , onLeftRightArrows = "לחיצה על החיצים ימינה ושמאלה במקלדת תזוז קדימה ואחורה ב"
         , onLeftRightButtons = "לחיצה על החיצים למעלה ולמטה במקלדת תזוז קדימה ואחורה ב"
         , seconds = "שניות"
@@ -119,7 +123,9 @@ englishStrings =
     , note = "Note"
     , config =
         { title = "Instructions / Settings"
-        , firstEnterUrl = "First enter the URL of the file you want to annotate"
+        , firstYouMustSupply = "First, you must supply a "
+        , audioUrl = "link"
+        , localFile = "local file"
         , onLeftRightArrows = "Use the left and right keyboard keys to move forward / back by "
         , onLeftRightButtons = "Use the up and down keyboard keys to move forward / back by "
         , seconds = "seconds"

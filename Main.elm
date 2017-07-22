@@ -2,11 +2,12 @@ port module Main exposing (..)
 
 import Html exposing (Html, program)
 import Html exposing (div, input, p, b, span, h2, h5, text, audio, ul, li)
-import Html.Attributes exposing (value, src, id, controls, style, class, dir, selected, hidden)
-import Html.Events exposing (onClick)
+import Html.Attributes exposing (value, src, id, controls, style, class, dir, selected, hidden, type_)
+import Html.Events exposing (onClick, onInput)
 import Keyboard exposing (KeyCode)
 import TimeStamp exposing (TimeStamp)
 import Config exposing (Config)
+import Source
 import Localization as L10N exposing (Locale)
 import Note exposing (Note)
 import Bootstrap.CDN as CDN
@@ -18,7 +19,9 @@ import Bootstrap.Form.InputGroup as InputGroup
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Select as Select
 import Bootstrap.Button as Button
+import Bootstrap.ButtonGroup as ButtonGroup
 import Assets
+import Json.Decode as Json
 
 
 type alias Model =
@@ -35,6 +38,7 @@ type alias Model =
 
 type Msg
     = EditUrl String
+    | SetFileSource
     | IsReady Bool
     | PauseUnpause
     | Paused
@@ -76,6 +80,9 @@ port setPlayhead : ( String, Int ) -> Cmd msg
 
 
 port setUrl : ( String, String ) -> Cmd msg
+
+
+port setFileSource : ( String, String ) -> Cmd msg
 
 
 port timeStamp : (( TimeStamp, TimeStamp ) -> msg) -> Sub msg
@@ -120,6 +127,9 @@ update msg model =
     case msg of
         EditUrl url ->
             ( { model | url = url }, setUrl ( "audio", url ) )
+
+        SetFileSource ->
+            ( model, setFileSource ( "file-input", "audio" ) )
 
         IsReady ready ->
             ( { model | ready = ready }, Cmd.none )
@@ -237,7 +247,12 @@ view locale model =
     Grid.container [ L10N.dir locale ]
         [ CDN.stylesheet
         , configView locale model
-        , urlInput locale model
+        , case model.config.sourceType of
+            Source.UrlInput ->
+                urlInput locale model
+
+            Source.FileInput ->
+                fileInput locale model
         , div [ hidden <| not model.ready ]
             [ audioControls locale model "50px"
             , h2 [] [ text (L10N.strings locale).allNotes ]
@@ -258,6 +273,23 @@ configView locale model =
 
         stringToInt =
             String.toFloat >> Result.withDefault 0 >> floor
+
+        sourceOption titleFn thisSource =
+            ButtonGroup.radioButton (model.config.sourceType == thisSource)
+                [ if model.config.sourceType == thisSource then
+                    Button.primary
+                  else
+                    Button.secondary
+                , Button.onClick <| ConfigMsg <| Config.SetSourceType thisSource
+                ]
+                [ localizedText titleFn ]
+
+        sourceInput =
+            ButtonGroup.radioButtonGroup
+                [ ButtonGroup.small, ButtonGroup.attrs [ dir "ltr" ] ]
+                [ sourceOption .localFile Source.FileInput
+                , sourceOption .audioUrl Source.UrlInput
+                ]
 
         seekInput selectedVal options message =
             Select.select
@@ -296,7 +328,7 @@ configView locale model =
             [ localeSelect
             , h2 [] [ localizedText .title ]
             , ul []
-                [ li [] [ localizedText .firstEnterUrl ]
+                [ li [] [ localizedText .firstYouMustSupply, sourceInput ]
                 , div [ hidden (not model.ready) ]
                     [ li []
                         [ localizedText .onLeftRightArrows
@@ -327,6 +359,16 @@ urlInput locale model =
         |> L10N.predecessors locale [ InputGroup.span [] [ text (L10N.strings locale).fileUrl ] ]
         |> InputGroup.attrs [ dir "ltr" ]
         |> InputGroup.view
+
+
+fileInput : Locale -> Model -> Html Msg
+fileInput locale model =
+    input
+        [ type_ "file"
+        , id "file-input"
+        , Html.Events.on "change" (Json.succeed SetFileSource)
+        ]
+        []
 
 
 noUserSelect : List ( String, String )

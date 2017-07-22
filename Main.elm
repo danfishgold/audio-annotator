@@ -273,7 +273,10 @@ view locale model =
                         ]
                     |> InputGroup.attrs [ dir "ltr" ]
                     |> InputGroup.view
-                , table locale model
+                , if List.isEmpty model.notes then
+                    text ""
+                  else
+                    table locale model
                 ]
             ]
 

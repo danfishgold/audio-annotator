@@ -21,6 +21,7 @@ import Assets
 type alias Model =
     { url : String
     , ready : Bool
+    , paused : Bool
     , timeStamp : TimeStamp
     , currentNote : Note
     , notes : List Note
@@ -31,6 +32,8 @@ type alias Model =
 type Msg
     = EditUrl String
     | IsReady Bool
+    | PauseUnpause
+    | Seek SeekSize SeekDirection
     | SetCurrentNoteText String
     | SetCurrentNoteTime TimeStamp
     | AddNote Note
@@ -38,6 +41,16 @@ type Msg
     | SetTimeStamp TimeStamp
     | KeyUp KeyCode
     | ConfigMsg Config.Msg
+
+
+type SeekDirection
+    = Forward
+    | Backward
+
+
+type SeekSize
+    = Small
+    | Big
 
 
 port pauseUnpause : String -> Cmd msg
@@ -59,6 +72,7 @@ init : String -> ( Model, Cmd Msg )
 init url =
     ( { url = url
       , ready = False
+      , paused = True
       , timeStamp = 0
       , currentNote = Note 0 ""
       , notes = []
@@ -90,6 +104,29 @@ update msg model =
 
         IsReady ready ->
             ( { model | ready = ready }, Cmd.none )
+
+        PauseUnpause ->
+            ( { model | paused = not model.paused }, pauseUnpause "audio" )
+
+        Seek size direction ->
+            let
+                amount =
+                    case size of
+                        Small ->
+                            model.config.smallSeek
+
+                        Big ->
+                            model.config.bigSeek
+
+                value =
+                    case direction of
+                        Forward ->
+                            amount
+
+                        Backward ->
+                            -amount
+            in
+                ( model, seek ( "audio", value ) )
 
         SetCurrentNoteText noteText ->
             if model.currentNote.text == "" && noteText == " " then
@@ -136,19 +173,19 @@ update msg model =
 
         KeyUp 32 ->
             if String.isEmpty model.currentNote.text then
-                ( model, pauseUnpause "audio" )
+                update PauseUnpause model
             else
                 ( model, Cmd.none )
 
         KeyUp 37 ->
             if String.isEmpty model.currentNote.text then
-                ( model, seek ( "audio", model.config.smallSeek ) )
+                update (Seek Small Forward) model
             else
                 ( model, Cmd.none )
 
         KeyUp 39 ->
             if String.isEmpty model.currentNote.text then
-                ( model, seek ( "audio", -model.config.smallSeek ) )
+                update (Seek Small Backward) model
             else
                 ( model, Cmd.none )
 
@@ -178,23 +215,26 @@ view locale model =
                 |> L10N.predecessors locale [ InputGroup.span [] [ text strings.fileUrl ] ]
                 |> InputGroup.attrs [ dir "ltr" ]
                 |> InputGroup.view
-            , audio [ id "audio", controls True ] []
-            , h2 [] [ text strings.allNotes ]
-            , h5 [] [ text strings.newNote ]
-            , InputGroup.config
-                (InputGroup.text
-                    [ Input.onInput SetCurrentNoteText
-                    , Input.value model.currentNote.text
-                    , Input.attrs [ L10N.dir locale ]
-                    ]
-                )
-                |> L10N.predecessors locale
-                    [ InputGroup.span []
-                        [ text <| TimeStamp.asString model.currentNote.timeStamp ]
-                    ]
-                |> InputGroup.attrs [ dir "ltr" ]
-                |> InputGroup.view
-            , table locale model
+            , div []
+                [ audio [ id "audio", controls False ] []
+                , audioControls locale model "50px"
+                , h2 [] [ text strings.allNotes ]
+                , h5 [] [ text strings.newNote ]
+                , InputGroup.config
+                    (InputGroup.text
+                        [ Input.onInput SetCurrentNoteText
+                        , Input.value model.currentNote.text
+                        , Input.attrs [ L10N.dir locale ]
+                        ]
+                    )
+                    |> L10N.predecessors locale
+                        [ InputGroup.span []
+                            [ text <| TimeStamp.asString model.currentNote.timeStamp ]
+                        ]
+                    |> InputGroup.attrs [ dir "ltr" ]
+                    |> InputGroup.view
+                , table locale model
+                ]
             ]
 
 
@@ -215,6 +255,7 @@ configView locale model =
                         , ( "width", "auto" )
                         ]
                     ]
+                , Select.small
                 , Select.onChange (stringToInt >> message)
                 ]
                 (options
@@ -236,20 +277,36 @@ configView locale model =
             , h2 [] [ localizedText .title ]
             , ul []
                 [ li [] [ localizedText .firstEnterUrl ]
-                , li []
-                    [ localizedText .onLeftRightArrows
-                    , smallSeekInput
-                    , localizedText .seconds
+                , div []
+                    [ li []
+                        [ localizedText .onLeftRightArrows
+                        , smallSeekInput
+                        , localizedText .seconds
+                        ]
+                    , li []
+                        [ localizedText .onLeftRightButtons
+                        , bigSeekInput
+                        , localizedText .seconds
+                        ]
+                    , li [] [ localizedText .onSpace ]
+                    , li [] [ localizedText .noteWithBang ]
                     ]
-                , li []
-                    [ localizedText .onLeftRightButtons
-                    , bigSeekInput
-                    , localizedText .seconds
-                    ]
-                , li [] [ localizedText .onSpace ]
-                , li [] [ localizedText .noteWithBang ]
                 ]
             ]
+
+
+audioControls : Locale -> Model -> String -> Html Msg
+audioControls locale model sz =
+    div [ dir "ltr" ]
+        [ span [ onClick (Seek Big Backward) ] [ Assets.previous sz ]
+        , span [ onClick (Seek Small Backward) ] [ Assets.rewind sz ]
+        , if model.paused then
+            span [ onClick PauseUnpause ] [ Assets.play sz ]
+          else
+            span [ onClick PauseUnpause ] [ Assets.pause sz ]
+        , span [ onClick (Seek Small Forward) ] [ Assets.fastForward sz ]
+        , span [ onClick (Seek Big Forward) ] [ Assets.next sz ]
+        ]
 
 
 table : Locale -> Model -> Html Msg

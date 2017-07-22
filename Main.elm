@@ -321,7 +321,7 @@ configView locale model =
 
 audioControls : Locale -> Model -> String -> Html Msg
 audioControls locale model sz =
-    div [ dir "ltr" ]
+    div [ dir "ltr", style [ ( "text-align", "center" ) ] ]
         [ span [ onClick (Seek Big Backward) ] [ Assets.previous sz ]
         , span [ onClick (Seek Small Backward) ] [ Assets.rewind sz ]
         , if model.paused then

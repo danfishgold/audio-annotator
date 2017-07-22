@@ -1,12 +1,16 @@
 port module Main exposing (..)
 
 import Html exposing (Html, program)
-import Html exposing (div, input, p, b, span, h2, text)
+import Html exposing (div, input, p, b, span, h2, text, audio)
 import Html.Events exposing (onInput, onClick)
-import Html.Attributes exposing (dir, value)
+import Html.Attributes exposing (value, src, id, controls)
 import Keyboard exposing (KeyCode)
 import TimeStamp exposing (TimeStamp)
+import Config exposing (Config)
+import Localization as L10N exposing (Locale)
 import Note exposing (Note)
+import Bootstrap.CDN as CDN
+import Bootstrap.Grid as Grid
 
 
 type alias Model =
@@ -15,6 +19,7 @@ type alias Model =
     , timeStamp : TimeStamp
     , currentNote : Note
     , notes : List Note
+    , config : Config
     }
 
 
@@ -29,13 +34,13 @@ type Msg
     | KeyUp KeyCode
 
 
-port pauseUnpause : () -> Cmd msg
+port pauseUnpause : String -> Cmd msg
 
 
-port seek : Int -> Cmd msg
+port seek : ( String, Int ) -> Cmd msg
 
 
-port setUrl : String -> Cmd msg
+port setUrl : ( String, String ) -> Cmd msg
 
 
 port timeStamp : (TimeStamp -> msg) -> Sub msg
@@ -51,6 +56,7 @@ init =
       , timeStamp = 0
       , currentNote = Note 0 ""
       , notes = []
+      , config = Config.default
       }
     , Cmd.none
     )
@@ -74,7 +80,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         EditUrl url ->
-            ( { model | url = url }, setUrl url )
+            ( { model | url = url }, setUrl ( "audio", url ) )
 
         IsReady ready ->
             ( { model | ready = ready }, Cmd.none )
@@ -124,19 +130,19 @@ update msg model =
 
         KeyUp 32 ->
             if String.isEmpty model.currentNote.text then
-                ( model, pauseUnpause () )
+                ( model, pauseUnpause "audio" )
             else
                 ( model, Cmd.none )
 
         KeyUp 37 ->
             if String.isEmpty model.currentNote.text then
-                ( model, seek 5 )
+                ( model, seek ( "audio", 5 ) )
             else
                 ( model, Cmd.none )
 
         KeyUp 39 ->
             if String.isEmpty model.currentNote.text then
-                ( model, seek -5 )
+                ( model, seek ( "audio", -5 ) )
             else
                 ( model, Cmd.none )
 
@@ -144,17 +150,23 @@ update msg model =
             ( model, Cmd.none )
 
 
-view : Model -> Html Msg
-view model =
-    div [ dir "rtl" ]
-        [ p [] [ text "url" ]
-        , input [ onInput EditUrl, value model.url ] []
-        , p [] [ text "new note" ]
-        , text <| TimeStamp.asString model.currentNote.timeStamp
-        , input [ onInput SetCurrentNoteText, value model.currentNote.text ] []
-        , h2 [] [ text "notes" ]
-        , model.notes |> List.map Note.view |> List.reverse |> div []
-        ]
+view : Locale -> Model -> Html Msg
+view locale model =
+    let
+        strings =
+            L10N.strings locale
+    in
+        Grid.container [ L10N.dir locale ]
+            [ CDN.stylesheet
+            , audio [ id "audio", controls True ] []
+            , p [] [ text strings.fileUrl ]
+            , input [ onInput EditUrl, value model.url ] []
+            , p [] [ text strings.newNote ]
+            , text <| TimeStamp.asString model.currentNote.timeStamp
+            , input [ onInput SetCurrentNoteText, value model.currentNote.text ] []
+            , h2 [] [ text strings.allNotes ]
+            , model.notes |> List.map Note.view |> List.reverse |> div []
+            ]
 
 
 main : Program Never Model Msg
@@ -163,5 +175,5 @@ main =
         { init = init
         , subscriptions = subscriptions
         , update = update
-        , view = view
+        , view = \model -> view model.config.locale model
         }

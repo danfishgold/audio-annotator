@@ -3,16 +3,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-  <audio controls id="audio"></audio>
   <div id="main"></div>
   <script src="elm.js"></script>
   <script>
 
-    var audio = document.getElementById('audio')
     var node = document.getElementById('main')
     var app = Elm.Main.embed(node)
 
-    app.ports.pauseUnpause.subscribe(function() {
+    app.ports.pauseUnpause.subscribe(function(audioId) {
+      var audio = document.getElementById(audioId)
       if (audio.paused) {
         audio.play()
       } else {
@@ -20,25 +19,33 @@
       }
     })
 
-    app.ports.seek.subscribe(function(amount) {
+    app.ports.seek.subscribe(function(audioIdAndAmount) {
+      var audioId = audioIdAndAmount[0]
+      var amount = audioIdAndAmount[1]
+      var audio = document.getElementById(audioId)
       audio.currentTime += amount
     })
 
-    app.ports.setUrl.subscribe(function(url) {
+    app.ports.setUrl.subscribe(function(audioIdAndUrl) {
+      var audioId = audioIdAndUrl[0]
+      var url = audioIdAndUrl[1]
+      var audio = document.getElementById(audioId)
       audio.src = url
+
+      audio.ontimeupdate = function() {
+        app.ports.timeStamp.send(Math.floor(audio.currentTime))
+      }
+
+      audio.oncanplay = function() {
+        app.ports.isReady.send(true)
+      }
+
+      audio.onerror = function() {
+        app.ports.isReady.send(false)
+      }
     })
 
-    audio.ontimeupdate = function() {
-      app.ports.timeStamp.send(Math.floor(audio.currentTime))
-    }
-
-    audio.oncanplay = function() {
-      app.ports.isReady.send(true)
-    }
-
-    audio.onerror = function() {
-      app.ports.isReady.send(false)
-    }
+    
 
   </script>
 </body>

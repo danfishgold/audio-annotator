@@ -161,10 +161,17 @@ view locale model =
             [ CDN.stylesheet
             , audio [ id "audio", controls True ] []
             , p [] [ text strings.fileUrl ]
-            , input [ onInput EditUrl, value model.url ] []
+            , Input.text
+                [ Input.onInput EditUrl
+                , Input.value model.url
+                , Input.attrs [ dir "ltr" ]
+                ]
             , p [] [ text strings.newNote ]
             , text <| TimeStamp.asString model.currentNote.timeStamp
-            , input [ onInput SetCurrentNoteText, value model.currentNote.text ] []
+            , Input.text
+                [ Input.onInput SetCurrentNoteText
+                , Input.value model.currentNote.text
+                ]
             , h2 [] [ text strings.allNotes ]
             , table locale model
             ]

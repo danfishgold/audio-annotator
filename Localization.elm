@@ -1,12 +1,43 @@
-module Localization exposing (Locale(..), strings, dir, textAlign)
+module Localization exposing (Locale(..), next, strings, dir, textAlign, predecessors, successors)
 
 import Html
 import Html.Attributes exposing (dir)
+import Bootstrap.Form.InputGroup as InputGroup
 
 
 type Locale
     = Hebrew
     | English
+
+
+next : Locale -> Locale
+next locale =
+    case locale of
+        Hebrew ->
+            English
+
+        English ->
+            Hebrew
+
+
+predecessors : Locale -> List (InputGroup.Addon msg) -> InputGroup.Config msg -> InputGroup.Config msg
+predecessors locale =
+    case locale of
+        Hebrew ->
+            InputGroup.successors
+
+        English ->
+            InputGroup.predecessors
+
+
+successors : Locale -> List (InputGroup.Addon msg) -> InputGroup.Config msg -> InputGroup.Config msg
+successors locale =
+    case locale of
+        Hebrew ->
+            InputGroup.predecessors
+
+        English ->
+            InputGroup.successors
 
 
 dir : Locale -> Html.Attribute msg
@@ -35,6 +66,18 @@ type alias Strings =
     , allNotes : String
     , timeStamp : String
     , note : String
+    , config : ConfigStrings
+    }
+
+
+type alias ConfigStrings =
+    { title : String
+    , firstEnterUrl : String
+    , onLeftRightArrows : String
+    , onLeftRightButtons : String
+    , seconds : String
+    , onSpace : String
+    , noteWithBang : String
     }
 
 
@@ -55,6 +98,15 @@ hebrewStrings =
     , allNotes = "הערות"
     , timeStamp = "זמן"
     , note = "הערה"
+    , config =
+        { title = "הוראות / הגדרות"
+        , firstEnterUrl = "קודם כל צריך לתת לינק לקובץ שרוצים להשמיע"
+        , onLeftRightArrows = "לחיצה על החיצים ימינה ושמאלה במקלדת תזוז קדימה ואחורה ב"
+        , onLeftRightButtons = "לחיצה על הכפתורים ״קדימה״ ו״אחורה״ תזוז ב"
+        , seconds = "שניות"
+        , onSpace = "לחיצה על רווח (כשעוד לא כתוב כלום בהערה החדשה) תעצור ותפעיל את הקובץ"
+        , noteWithBang = "הערה שמתחילה בסימן קריאה תודגש"
+        }
     }
 
 
@@ -65,4 +117,13 @@ englishStrings =
     , allNotes = "Notes"
     , timeStamp = "Time"
     , note = "Note"
+    , config =
+        { title = "Instructions / Settings"
+        , firstEnterUrl = "First enter the URL of the file you want to annotate"
+        , onLeftRightArrows = "Use the left and right keyboard keys to move forward / back by "
+        , onLeftRightButtons = "Use the \"Forward\" and \"Back\" buttons to move by "
+        , seconds = "seconds"
+        , onSpace = "Hitting the space key (when the current note is empty) will play/pause the audio"
+        , noteWithBang = "Notes that start with a bang (!) will be highlighted"
+        }
     }

@@ -1,8 +1,9 @@
 port module Main exposing (..)
 
 import Html exposing (Html, program)
-import Html exposing (div, input, p, b, span, h2, text, audio)
-import Html.Attributes exposing (value, src, id, controls, style, class, dir)
+import Html exposing (div, input, p, b, span, h2, h5, text, audio, ul, li)
+import Html.Attributes exposing (value, src, id, controls, style, class, dir, selected)
+import Html.Events exposing (onClick)
 import Keyboard exposing (KeyCode)
 import TimeStamp exposing (TimeStamp)
 import Config exposing (Config)
@@ -11,7 +12,9 @@ import Note exposing (Note)
 import Bootstrap.CDN as CDN
 import Bootstrap.Grid as Grid
 import Bootstrap.Table as Table exposing (th, tr, td)
+import Bootstrap.Form.InputGroup as InputGroup
 import Bootstrap.Form.Input as Input
+import Bootstrap.Form.Select as Select
 
 
 type alias Model =
@@ -33,6 +36,7 @@ type Msg
     | DeleteNote Int
     | SetTimeStamp TimeStamp
     | KeyUp KeyCode
+    | ConfigMsg Config.Msg
 
 
 port pauseUnpause : String -> Cmd msg
@@ -50,16 +54,16 @@ port timeStamp : (TimeStamp -> msg) -> Sub msg
 port isReady : (Bool -> msg) -> Sub msg
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( { url = ""
+init : String -> ( Model, Cmd Msg )
+init url =
+    ( { url = url
       , ready = False
       , timeStamp = 0
       , currentNote = Note 0 ""
       , notes = []
       , config = Config.default
       }
-    , Cmd.none
+    , setUrl ( "audio", url )
     )
 
 
@@ -137,18 +141,21 @@ update msg model =
 
         KeyUp 37 ->
             if String.isEmpty model.currentNote.text then
-                ( model, seek ( "audio", 5 ) )
+                ( model, seek ( "audio", model.config.smallSeek ) )
             else
                 ( model, Cmd.none )
 
         KeyUp 39 ->
             if String.isEmpty model.currentNote.text then
-                ( model, seek ( "audio", -5 ) )
+                ( model, seek ( "audio", -model.config.smallSeek ) )
             else
                 ( model, Cmd.none )
 
         KeyUp key ->
             ( model, Cmd.none )
+
+        ConfigMsg message ->
+            ( { model | config = Config.update message model.config }, Cmd.none )
 
 
 view : Locale -> Model -> Html Msg
@@ -159,21 +166,88 @@ view locale model =
     in
         Grid.container [ L10N.dir locale ]
             [ CDN.stylesheet
+            , configView locale model
+            , InputGroup.config
+                (InputGroup.url
+                    [ Input.onInput EditUrl
+                    , Input.value model.url
+                    , Input.attrs [ dir "ltr" ]
+                    ]
+                )
+                |> L10N.predecessors locale [ InputGroup.span [] [ text strings.fileUrl ] ]
+                |> InputGroup.attrs [ dir "ltr" ]
+                |> InputGroup.view
             , audio [ id "audio", controls True ] []
-            , p [] [ text strings.fileUrl ]
-            , Input.text
-                [ Input.onInput EditUrl
-                , Input.value model.url
-                , Input.attrs [ dir "ltr" ]
-                ]
-            , p [] [ text strings.newNote ]
-            , text <| TimeStamp.asString model.currentNote.timeStamp
-            , Input.text
-                [ Input.onInput SetCurrentNoteText
-                , Input.value model.currentNote.text
-                ]
             , h2 [] [ text strings.allNotes ]
+            , h5 [] [ text strings.newNote ]
+            , InputGroup.config
+                (InputGroup.text
+                    [ Input.onInput SetCurrentNoteText
+                    , Input.value model.currentNote.text
+                    , Input.attrs [ L10N.dir locale ]
+                    ]
+                )
+                |> L10N.predecessors locale
+                    [ InputGroup.span []
+                        [ text <| TimeStamp.asString model.currentNote.timeStamp ]
+                    ]
+                |> InputGroup.attrs [ dir "ltr" ]
+                |> InputGroup.view
             , table locale model
+            ]
+
+
+configView : Locale -> Model -> Html Msg
+configView locale model =
+    let
+        localizedText fn =
+            text (L10N.strings locale |> .config |> fn)
+
+        stringToInt =
+            String.toFloat >> Result.withDefault 0 >> floor
+
+        seekInput selectedVal options message =
+            Select.select
+                [ Select.attrs
+                    [ style
+                        [ ( "display", "inline-block" )
+                        , ( "width", "auto" )
+                        ]
+                    ]
+                , Select.onChange (stringToInt >> message)
+                ]
+                (options
+                    |> List.map toString
+                    |> List.map (\val -> Select.item [ value val, selected <| val == selectedVal ] [ text val ])
+                )
+
+        smallSeekInput =
+            seekInput (toString model.config.smallSeek) [ 2, 5, 10 ] (ConfigMsg << Config.SetSmallSeek)
+
+        bigSeekInput =
+            seekInput (toString model.config.bigSeek) [ 30, 60, 120 ] (ConfigMsg << Config.SetSmallSeek)
+
+        localeSelect =
+            span [ locale |> L10N.next |> Config.SetLocale |> ConfigMsg |> onClick ] [ text "lang" ]
+    in
+        div []
+            [ localeSelect
+            , h2 [] [ localizedText .title ]
+            , ul []
+                [ li [] [ localizedText .firstEnterUrl ]
+                , li []
+                    [ localizedText .onLeftRightArrows
+                    , smallSeekInput
+                    , localizedText .seconds
+                    ]
+                , li []
+                    [ localizedText .onLeftRightButtons
+                    , bigSeekInput
+                    , localizedText .seconds
+                    ]
+                , li [] [ localizedText .onSpace ]
+                , li [] [ localizedText .noteWithBang ]
+                ]
             ]
 
 
@@ -201,13 +275,20 @@ table locale { notes } =
                 |> Table.tbody []
 
         row note =
-            tr []
-                [ td [] [ text <| TimeStamp.asString note.timeStamp ]
-                , td [] [ text note.text ]
-                ]
+            let
+                textColAttrs =
+                    if String.startsWith "!" note.text then
+                        [ Table.cellInfo ]
+                    else
+                        []
+            in
+                tr []
+                    [ td [] [ text <| TimeStamp.asString note.timeStamp ]
+                    , td textColAttrs [ text note.text ]
+                    ]
     in
         Table.table
-            { options = [ Table.small, Table.hover ]
+            { options = []
             , thead = head
             , tbody = body
             }
@@ -216,7 +297,7 @@ table locale { notes } =
 main : Program Never Model Msg
 main =
     program
-        { init = init
+        { init = init ""
         , subscriptions = subscriptions
         , update = update
         , view = \model -> view model.config.locale model

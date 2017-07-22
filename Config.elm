@@ -1,4 +1,4 @@
-module Config exposing (Config, default)
+module Config exposing (Config, default, Msg(..), update)
 
 import Localization as L10N exposing (Locale(..))
 import Html exposing (Html, div, text)

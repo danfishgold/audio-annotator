@@ -381,18 +381,18 @@ table locale { notes } =
 
         row note =
             let
-                textColAttrs =
+                rowAttrs =
                     if String.startsWith "!" note.text then
-                        [ Table.cellInfo, Table.cellAttr <| style [ ( "width", "100%" ) ] ]
+                        [ Table.rowInfo ]
                     else
-                        [ Table.cellAttr <| style [ ( "width", "100%" ) ] ]
+                        []
             in
-                tr []
+                tr rowAttrs
                     [ td []
                         [ Button.button [ Button.onClick (SetPlayhead note.timeStamp), Button.roleLink ]
                             [ text <| TimeStamp.asString note.timeStamp ]
                         ]
-                    , td textColAttrs [ text note.text ]
+                    , td [ Table.cellAttr <| style [ ( "width", "100%" ), ( "vertical-align", "middle" ) ] ] [ text note.text ]
                     ]
     in
         Table.table

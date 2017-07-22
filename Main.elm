@@ -2,7 +2,7 @@ port module Main exposing (..)
 
 import Html exposing (Html, program)
 import Html exposing (div, input, p, b, span, h2, h5, text, audio, ul, li)
-import Html.Attributes exposing (value, src, id, controls, style, class, dir, selected)
+import Html.Attributes exposing (value, src, id, controls, style, class, dir, selected, hidden)
 import Html.Events exposing (onClick)
 import Keyboard exposing (KeyCode)
 import TimeStamp exposing (TimeStamp)
@@ -231,7 +231,7 @@ view locale model =
                 |> L10N.predecessors locale [ InputGroup.span [] [ text strings.fileUrl ] ]
                 |> InputGroup.attrs [ dir "ltr" ]
                 |> InputGroup.view
-            , div []
+            , div [ hidden <| not model.ready ]
                 [ audio [ id "audio", controls False ] []
                 , audioControls locale model "50px"
                 , h2 [] [ text strings.allNotes ]
@@ -293,7 +293,7 @@ configView locale model =
             , h2 [] [ localizedText .title ]
             , ul []
                 [ li [] [ localizedText .firstEnterUrl ]
-                , div []
+                , div [ hidden (not model.ready) ]
                     [ li []
                         [ localizedText .onLeftRightArrows
                         , smallSeekInput

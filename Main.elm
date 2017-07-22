@@ -33,6 +33,8 @@ type Msg
     = EditUrl String
     | IsReady Bool
     | PauseUnpause
+    | Paused
+    | Unpaused
     | Seek SeekSize SeekDirection
     | SetCurrentNoteText String
     | SetCurrentNoteTime TimeStamp
@@ -54,6 +56,12 @@ type SeekSize
 
 
 port pauseUnpause : String -> Cmd msg
+
+
+port paused : (() -> msg) -> Sub msg
+
+
+port played : (() -> msg) -> Sub msg
 
 
 port seek : ( String, Int ) -> Cmd msg
@@ -88,6 +96,8 @@ subscriptions model =
         [ Keyboard.ups KeyUp
         , timeStamp SetTimeStamp
         , isReady IsReady
+        , paused (always Paused)
+        , played (always Unpaused)
         ]
 
 
@@ -106,7 +116,13 @@ update msg model =
             ( { model | ready = ready }, Cmd.none )
 
         PauseUnpause ->
-            ( { model | paused = not model.paused }, pauseUnpause "audio" )
+            ( model, pauseUnpause "audio" )
+
+        Paused ->
+            ( { model | paused = True }, Cmd.none )
+
+        Unpaused ->
+            ( { model | paused = False }, Cmd.none )
 
         Seek size direction ->
             let

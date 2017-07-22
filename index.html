@@ -43,6 +43,14 @@
       audio.onerror = function() {
         app.ports.isReady.send(false)
       }
+
+      audio.onpause = function() {
+        app.ports.paused.send(null)
+      }
+
+      audio.onplay = function() {
+        app.ports.played.send(null)
+      }
     })
 
     

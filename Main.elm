@@ -2,8 +2,7 @@ port module Main exposing (..)
 
 import Html exposing (Html, program)
 import Html exposing (div, input, p, b, span, h2, text, audio)
-import Html.Events exposing (onInput, onClick)
-import Html.Attributes exposing (value, src, id, controls)
+import Html.Attributes exposing (value, src, id, controls, style, class, dir)
 import Keyboard exposing (KeyCode)
 import TimeStamp exposing (TimeStamp)
 import Config exposing (Config)
@@ -11,6 +10,8 @@ import Localization as L10N exposing (Locale)
 import Note exposing (Note)
 import Bootstrap.CDN as CDN
 import Bootstrap.Grid as Grid
+import Bootstrap.Table as Table exposing (th, tr, td)
+import Bootstrap.Form.Input as Input
 
 
 type alias Model =
@@ -165,8 +166,44 @@ view locale model =
             , text <| TimeStamp.asString model.currentNote.timeStamp
             , input [ onInput SetCurrentNoteText, value model.currentNote.text ] []
             , h2 [] [ text strings.allNotes ]
-            , model.notes |> List.map Note.view |> List.reverse |> div []
+            , table locale model
             ]
+
+
+table : Locale -> Model -> Html Msg
+table locale { notes } =
+    let
+        localizedText fn =
+            text (L10N.strings locale |> fn)
+
+        alignmentAttr =
+            Table.cellAttr <| style [ L10N.textAlign locale ]
+
+        head =
+            Table.thead []
+                [ tr []
+                    [ th [ alignmentAttr ] [ localizedText .timeStamp ]
+                    , th [ alignmentAttr ] [ localizedText .note ]
+                    ]
+                ]
+
+        body =
+            notes
+                |> List.sortBy .timeStamp
+                |> List.map row
+                |> Table.tbody []
+
+        row note =
+            tr []
+                [ td [] [ text <| TimeStamp.asString note.timeStamp ]
+                , td [] [ text note.text ]
+                ]
+    in
+        Table.table
+            { options = [ Table.small, Table.hover ]
+            , thead = head
+            , tbody = body
+            }
 
 
 main : Program Never Model Msg

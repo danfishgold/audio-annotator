@@ -1,4 +1,4 @@
-module Localization exposing (Locale(..), strings, dir)
+module Localization exposing (Locale(..), strings, dir, textAlign)
 
 import Html
 import Html.Attributes exposing (dir)
@@ -19,10 +19,22 @@ dir locale =
             Html.Attributes.dir "ltr"
 
 
+textAlign : Locale -> ( String, String )
+textAlign locale =
+    case locale of
+        Hebrew ->
+            ( "text-align", "right" )
+
+        English ->
+            ( "text-align", "left" )
+
+
 type alias Strings =
     { fileUrl : String
     , newNote : String
     , allNotes : String
+    , timeStamp : String
+    , note : String
     }
 
 
@@ -41,6 +53,8 @@ hebrewStrings =
     { fileUrl = "כתובת הקובץ"
     , newNote = "הערה חדשה"
     , allNotes = "הערות"
+    , timeStamp = "זמן"
+    , note = "הערה"
     }
 
 
@@ -49,4 +63,6 @@ englishStrings =
     { fileUrl = "File URL"
     , newNote = "New note"
     , allNotes = "Notes"
+    , timeStamp = "Time"
+    , note = "Note"
     }

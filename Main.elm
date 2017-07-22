@@ -239,7 +239,16 @@ update msg model =
                 ( model, Cmd.none )
 
         ConfigMsg message ->
-            ( { model | config = Config.update message model.config }, Cmd.none )
+            let
+                newModel =
+                    case message of
+                        Config.SetSourceType _ ->
+                            { model | url = "", ready = False }
+
+                        _ ->
+                            model
+            in
+                ( { newModel | config = Config.update message model.config }, Cmd.none )
 
 
 view : Locale -> Model -> Html Msg

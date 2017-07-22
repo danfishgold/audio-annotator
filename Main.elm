@@ -193,13 +193,13 @@ update msg model =
             else
                 ( model, Cmd.none )
 
-        KeyUp 37 ->
+        KeyUp 39 ->
             if String.isEmpty model.currentNote.text then
                 update (Seek Small Forward) model
             else
                 ( model, Cmd.none )
 
-        KeyUp 39 ->
+        KeyUp 37 ->
             if String.isEmpty model.currentNote.text then
                 update (Seek Small Backward) model
             else

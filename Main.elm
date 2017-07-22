@@ -363,14 +363,13 @@ table locale { notes } =
         localizedText fn =
             text (L10N.strings locale |> fn)
 
-        alignmentAttr =
-            Table.cellAttr <| style [ L10N.textAlign locale ]
-
         head =
             Table.thead []
                 [ tr []
-                    [ th [ alignmentAttr ] [ localizedText .timeStamp ]
-                    , th [ alignmentAttr ] [ localizedText .note ]
+                    [ th [ Table.cellAttr <| style [ L10N.textAlign locale ] ]
+                        [ localizedText .timeStamp ]
+                    , th [ Table.cellAttr <| style [ L10N.textAlign locale, ( "width", "100%" ) ] ]
+                        [ localizedText .note ]
                     ]
                 ]
 
@@ -384,9 +383,9 @@ table locale { notes } =
             let
                 textColAttrs =
                     if String.startsWith "!" note.text then
-                        [ Table.cellInfo ]
+                        [ Table.cellInfo, Table.cellAttr <| style [ ( "width", "100%" ) ] ]
                     else
-                        []
+                        [ Table.cellAttr <| style [ ( "width", "100%" ) ] ]
             in
                 tr []
                     [ td []

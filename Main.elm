@@ -23,6 +23,7 @@ type alias Model =
     , ready : Bool
     , paused : Bool
     , timeStamp : TimeStamp
+    , remainingTime : TimeStamp
     , currentNote : Note
     , notes : List Note
     , config : Config
@@ -40,7 +41,7 @@ type Msg
     | SetCurrentNoteTime TimeStamp
     | AddNote Note
     | DeleteNote Int
-    | SetTimeStamp TimeStamp
+    | SetTimeStamp ( TimeStamp, TimeStamp )
     | KeyUp KeyCode
     | ConfigMsg Config.Msg
 
@@ -70,7 +71,7 @@ port seek : ( String, Int ) -> Cmd msg
 port setUrl : ( String, String ) -> Cmd msg
 
 
-port timeStamp : (TimeStamp -> msg) -> Sub msg
+port timeStamp : (( TimeStamp, TimeStamp ) -> msg) -> Sub msg
 
 
 port isReady : (Bool -> msg) -> Sub msg
@@ -82,6 +83,7 @@ init url =
       , ready = False
       , paused = True
       , timeStamp = 0
+      , remainingTime = 0
       , currentNote = Note 0 ""
       , notes = []
       , config = Config.default
@@ -165,10 +167,10 @@ update msg model =
                 , Cmd.none
                 )
 
-        SetTimeStamp timeStamp ->
+        SetTimeStamp ( timeStamp, remainingTime ) ->
             let
                 newModel =
-                    { model | timeStamp = timeStamp }
+                    { model | timeStamp = timeStamp, remainingTime = remainingTime }
             in
                 if model.currentNote.text == "" then
                     update (SetCurrentNoteTime timeStamp) newModel
@@ -246,6 +248,12 @@ view locale model =
                     |> L10N.predecessors locale
                         [ InputGroup.span []
                             [ text <| TimeStamp.asString model.currentNote.timeStamp ]
+                        ]
+                    |> L10N.successors locale
+                        [ InputGroup.span []
+                            [ text "-"
+                            , text <| TimeStamp.asString (model.remainingTime - model.currentNote.timeStamp + model.timeStamp)
+                            ]
                         ]
                     |> InputGroup.attrs [ dir "ltr" ]
                     |> InputGroup.view

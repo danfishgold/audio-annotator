@@ -38,7 +38,7 @@
       audio.src = url
 
       audio.ontimeupdate = function() {
-        app.ports.timeStamp.send(Math.floor(audio.currentTime))
+        app.ports.timeStamp.send([Math.floor(audio.currentTime), Math.floor(audio.duration) - Math.floor(audio.currentTime)])
       }
 
       audio.oncanplay = function() {

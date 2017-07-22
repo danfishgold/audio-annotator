@@ -396,7 +396,7 @@ table locale { notes } =
                     ]
     in
         Table.table
-            { options = []
+            { options = [ Table.small ]
             , thead = head
             , tbody = body
             }

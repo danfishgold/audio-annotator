@@ -192,31 +192,39 @@ update msg model =
             ( { model | notes = listRemove index model.notes }, Cmd.none )
 
         KeyUp 13 ->
-            if not (String.isEmpty model.url) && not (String.isEmpty model.currentNote.text) then
+            -- Enter
+            if model.ready && not (String.isEmpty model.currentNote.text) then
                 update (AddNote model.currentNote) { model | currentNote = Note model.timeStamp "" }
             else
                 ( model, Cmd.none )
 
-        KeyUp 32 ->
-            if String.isEmpty model.currentNote.text then
-                update PauseUnpause model
+        KeyUp keyCode ->
+            if model.ready && String.isEmpty model.currentNote.text then
+                case keyCode of
+                    32 ->
+                        -- Space
+                        update PauseUnpause model
+
+                    39 ->
+                        -- Right
+                        update (Seek Small Forward) model
+
+                    37 ->
+                        -- Left
+                        update (Seek Small Backward) model
+
+                    38 ->
+                        -- Up
+                        update (Seek Big Forward) model
+
+                    40 ->
+                        -- Down
+                        update (Seek Big Backward) model
+
+                    key ->
+                        ( model, Cmd.none )
             else
                 ( model, Cmd.none )
-
-        KeyUp 39 ->
-            if String.isEmpty model.currentNote.text then
-                update (Seek Small Forward) model
-            else
-                ( model, Cmd.none )
-
-        KeyUp 37 ->
-            if String.isEmpty model.currentNote.text then
-                update (Seek Small Backward) model
-            else
-                ( model, Cmd.none )
-
-        KeyUp key ->
-            ( model, Cmd.none )
 
         ConfigMsg message ->
             ( { model | config = Config.update message model.config }, Cmd.none )

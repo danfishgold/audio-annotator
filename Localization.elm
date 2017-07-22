@@ -100,11 +100,11 @@ hebrewStrings =
     , note = "הערה"
     , config =
         { title = "הוראות / הגדרות"
-        , firstEnterUrl = "קודם כל צריך לתת לינק לקובץ שרוצים להשמיע"
+        , firstEnterUrl = "קודם כל צריך לספק את הלינק לקובץ"
         , onLeftRightArrows = "לחיצה על החיצים ימינה ושמאלה במקלדת תזוז קדימה ואחורה ב"
-        , onLeftRightButtons = "לחיצה על הכפתורים ״קדימה״ ו״אחורה״ תזוז ב"
+        , onLeftRightButtons = "לחיצה על החיצים למעלה ולמטה במקלדת תזוז קדימה ואחורה ב"
         , seconds = "שניות"
-        , onSpace = "לחיצה על רווח (כשעוד לא כתוב כלום בהערה החדשה) תעצור ותפעיל את הקובץ"
+        , onSpace = "לחיצה על רווח תעצור ותפעיל את הקובץ"
         , noteWithBang = "הערה שמתחילה בסימן קריאה תודגש"
         }
     }
@@ -121,9 +121,9 @@ englishStrings =
         { title = "Instructions / Settings"
         , firstEnterUrl = "First enter the URL of the file you want to annotate"
         , onLeftRightArrows = "Use the left and right keyboard keys to move forward / back by "
-        , onLeftRightButtons = "Use the \"Forward\" and \"Back\" buttons to move by "
+        , onLeftRightButtons = "Use the up and down keyboard keys to move forward / back by "
         , seconds = "seconds"
-        , onSpace = "Hitting the space key (when the current note is empty) will play/pause the audio"
+        , onSpace = "Hitting the space key will play/pause the audio"
         , noteWithBang = "Notes that start with a bang (!) will be highlighted"
         }
     }

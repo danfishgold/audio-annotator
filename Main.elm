@@ -309,12 +309,12 @@ configView locale model =
 
         smallSeekInput =
             seekInput (toString model.config.smallSeek)
-                [ 2, 5, 10 ]
+                [ 2, 3, 5, 10 ]
                 (ConfigMsg << Config.SetSmallSeek)
 
         bigSeekInput =
             seekInput (toString model.config.bigSeek)
-                [ 30, 60, 120 ]
+                [ 15, 30, 60, 120 ]
                 (ConfigMsg << Config.SetBigSeek)
 
         localeSelect =

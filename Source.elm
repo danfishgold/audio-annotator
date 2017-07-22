@@ -1,11 +1,6 @@
-module Source exposing (Type(..), Source(..))
+module Source exposing (Type(..))
 
 
 type Type
     = UrlInput
     | FileInput
-
-
-type Source
-    = Url String
-    | File

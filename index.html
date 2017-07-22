@@ -31,6 +31,13 @@
       audio.currentTime += amount
     })
 
+    app.ports.setPlayhead.subscribe(function(audioIdAndTimeStamp) {
+      var audioId = audioIdAndTimeStamp[0]
+      var timeStamp = audioIdAndTimeStamp[1]
+      var audio = document.getElementById(audioId)
+      audio.currentTime = timeStamp
+    })
+
     app.ports.setUrl.subscribe(function(audioIdAndUrl) {
       var audioId = audioIdAndUrl[0]
       var url = audioIdAndUrl[1]

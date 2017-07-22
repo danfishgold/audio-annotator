@@ -15,6 +15,7 @@ import Bootstrap.Table as Table exposing (th, tr, td)
 import Bootstrap.Form.InputGroup as InputGroup
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.Select as Select
+import Bootstrap.Button as Button
 import Assets
 
 
@@ -37,6 +38,7 @@ type Msg
     | Paused
     | Unpaused
     | Seek SeekSize SeekDirection
+    | SetPlayhead TimeStamp
     | SetCurrentNoteText String
     | SetCurrentNoteTime TimeStamp
     | AddNote Note
@@ -66,6 +68,9 @@ port played : (() -> msg) -> Sub msg
 
 
 port seek : ( String, Int ) -> Cmd msg
+
+
+port setPlayhead : ( String, Int ) -> Cmd msg
 
 
 port setUrl : ( String, String ) -> Cmd msg
@@ -145,6 +150,9 @@ update msg model =
                             -amount
             in
                 ( model, seek ( "audio", value ) )
+
+        SetPlayhead timeStamp ->
+            ( model, setPlayhead ( "audio", timeStamp ) )
 
         SetCurrentNoteText noteText ->
             if model.currentNote.text == "" && noteText == " " then
@@ -373,7 +381,10 @@ table locale { notes } =
                         []
             in
                 tr []
-                    [ td [] [ text <| TimeStamp.asString note.timeStamp ]
+                    [ td []
+                        [ Button.button [ Button.onClick (SetPlayhead note.timeStamp), Button.roleLink ]
+                            [ text <| TimeStamp.asString note.timeStamp ]
+                        ]
                     , td textColAttrs [ text note.text ]
                     ]
     in

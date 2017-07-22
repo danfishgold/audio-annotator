@@ -95,7 +95,7 @@ strings locale =
 
 hebrewStrings : Strings
 hebrewStrings =
-    { fileUrl = "כתובת הקובץ"
+    { fileUrl = "לינק לקובץ"
     , newNote = "הערה חדשה"
     , allNotes = "הערות"
     , timeStamp = "זמן"

@@ -15,8 +15,8 @@ type alias Config =
 
 default : Config
 default =
-    { smallSeek = 2
-    , bigSeek = 60
+    { smallSeek = 5
+    , bigSeek = 15
     , locale = Hebrew
     , sourceType = FileInput
     }

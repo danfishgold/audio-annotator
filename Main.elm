@@ -298,6 +298,7 @@ view locale model =
 allNoteText : List Note -> String
 allNoteText notes =
     notes
+        |> List.sortBy .timeStamp
         |> List.map (\{ timeStamp, text } -> TimeStamp.asString timeStamp ++ "\t" ++ text)
         |> String.join "\n"
 

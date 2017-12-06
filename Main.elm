@@ -32,6 +32,7 @@ type alias Model =
     , remainingTime : TimeStamp
     , currentNote : Note
     , notes : List Note
+    , noteSortOrder : NoteSortOrder
     , config : Config
     }
 
@@ -40,6 +41,7 @@ type Msg
     = EditUrl String
     | SetFileSource
     | IsReady Bool
+    | SetNoteSortOrder NoteSortOrder
     | PauseUnpause
     | Paused
     | Unpaused
@@ -57,6 +59,11 @@ type Msg
 type SeekDirection
     = Forward
     | Backward
+
+
+type NoteSortOrder
+    = OldestFirst
+    | NewestFirst
 
 
 type SeekSize
@@ -100,6 +107,7 @@ init url =
       , remainingTime = 0
       , currentNote = Note 0 ""
       , notes = []
+      , noteSortOrder = OldestFirst
       , config = Config.default
       }
     , setUrl ( "audio", url )
@@ -133,6 +141,9 @@ update msg model =
 
         IsReady ready ->
             ( { model | ready = ready }, Cmd.none )
+
+        SetNoteSortOrder order ->
+            ( { model | noteSortOrder = order }, Cmd.none )
 
         PauseUnpause ->
             ( model, pauseUnpause "audio" )
@@ -455,16 +466,43 @@ noteInput locale model =
 
 
 table : Locale -> Model -> Html Msg
-table locale { notes } =
+table locale { notes, noteSortOrder } =
     let
         localizedText fn =
             text (L10N.strings locale |> fn)
 
+        sortOrderIndicator =
+            case noteSortOrder of
+                OldestFirst ->
+                    "▲"
+
+                NewestFirst ->
+                    "▼"
+
+        sortByTimeStamp =
+            case noteSortOrder of
+                OldestFirst ->
+                    List.sortBy .timeStamp
+
+                NewestFirst ->
+                    List.sortBy (negate << .timeStamp)
+
+        oppositeSortOrder =
+            case noteSortOrder of
+                OldestFirst ->
+                    NewestFirst
+
+                NewestFirst ->
+                    OldestFirst
+
         head =
             Table.thead []
                 [ tr []
-                    [ th [ Table.cellAttr <| style [ L10N.textAlign locale ] ]
-                        [ localizedText .timeStamp ]
+                    [ th
+                        [ Table.cellAttr <| style [ L10N.textAlign locale ]
+                        , Table.cellAttr <| onClick (SetNoteSortOrder oppositeSortOrder)
+                        ]
+                        [ text <| (L10N.strings locale).timeStamp ++ " " ++ sortOrderIndicator ]
                     , th [ Table.cellAttr <| style [ L10N.textAlign locale, ( "width", "100%" ) ] ]
                         [ localizedText .note ]
                     ]
@@ -472,7 +510,7 @@ table locale { notes } =
 
         body =
             notes
-                |> List.sortBy .timeStamp
+                |> sortByTimeStamp
                 |> List.map row
                 |> Table.tbody []
 

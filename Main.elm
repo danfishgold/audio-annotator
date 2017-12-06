@@ -2,7 +2,7 @@ port module Main exposing (..)
 
 import Html exposing (Html, program)
 import Html exposing (div, input, p, b, span, h2, h5, text, audio, ul, li)
-import Html.Attributes exposing (value, src, id, controls, style, class, dir, selected, hidden, type_, accept)
+import Html.Attributes exposing (value, src, id, controls, style, class, dir, selected, hidden, type_, accept, attribute)
 import Html.Events exposing (onClick, onInput)
 import Keyboard exposing (KeyCode)
 import TimeStamp exposing (TimeStamp)
@@ -269,9 +269,26 @@ view locale model =
             , if List.isEmpty model.notes then
                 text ""
               else
-                table locale model
+                div []
+                    [ Button.button
+                        [ Button.roleLink
+                        , Button.attrs
+                            [ id "clipboard-copy-button"
+                            , attribute "data-clipboard-text" (allNoteText model.notes)
+                            ]
+                        ]
+                        [ text (L10N.strings locale).copyToClipboard ]
+                    , table locale model
+                    ]
             ]
         ]
+
+
+allNoteText : List Note -> String
+allNoteText notes =
+    notes
+        |> List.map (\{ timeStamp, text } -> TimeStamp.asString timeStamp ++ "\t" ++ text)
+        |> String.join "\n"
 
 
 configView : Locale -> Model -> Html Msg

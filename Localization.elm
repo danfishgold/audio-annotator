@@ -66,6 +66,7 @@ type alias Strings =
     , allNotes : String
     , timeStamp : String
     , note : String
+    , copyToClipboard : String
     , config : ConfigStrings
     }
 
@@ -100,6 +101,7 @@ hebrewStrings =
     , allNotes = "הערות"
     , timeStamp = "זמן"
     , note = "הערה"
+    , copyToClipboard = "העתק את כל ההערות"
     , config =
         { title = "הוראות / הגדרות"
         , firstYouMustSupply = "קודם כל צריך לספק "
@@ -121,6 +123,7 @@ englishStrings =
     , allNotes = "Notes"
     , timeStamp = "Time"
     , note = "Note"
+    , copyToClipboard = "Copy all notes"
     , config =
         { title = "Instructions / Settings"
         , firstYouMustSupply = "First, you must supply a "

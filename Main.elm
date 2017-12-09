@@ -9,13 +9,13 @@ import TimeStamp exposing (TimeStamp)
 import Config exposing (Config)
 import Source
 import Audio exposing (SeekDirection(..), SeekSize(..), controls)
+import NoteTable exposing (view, SortOrder(..))
 import Localization as Ln exposing (Locale)
 import Note exposing (Note)
 import Bootstrap.CDN as CDN
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Row as Row
 import Bootstrap.Grid.Col as Col
-import Bootstrap.Table as Table exposing (th, tr, td)
 import Bootstrap.Form.InputGroup as InputGroup
 import Bootstrap.Form.Input as Input
 import Bootstrap.Button as Button
@@ -33,7 +33,7 @@ type alias Model =
     , remainingTime : TimeStamp
     , currentNote : Note
     , notes : List Note
-    , noteSortOrder : NoteSortOrder
+    , noteSortOrder : NoteTable.SortOrder
     , config : Config
     }
 
@@ -42,7 +42,7 @@ type Msg
     = EditUrl String
     | SetFileSource
     | IsReady Bool
-    | SetNoteSortOrder NoteSortOrder
+    | SetNoteSortOrder NoteTable.SortOrder
     | PauseUnpause
     | Paused
     | Unpaused
@@ -55,11 +55,6 @@ type Msg
     | SetTimeStamp ( TimeStamp, TimeStamp )
     | KeyUp KeyCode
     | ConfigMsg Config.Msg
-
-
-type NoteSortOrder
-    = OldestFirst
-    | NewestFirst
 
 
 
@@ -276,7 +271,9 @@ view locale model =
                             ]
                         ]
                         [ text (Ln.strings locale).copyToClipboard ]
-                    , table locale model
+                    , (NoteTable.view SetNoteSortOrder SetPlayhead locale)
+                        model.notes
+                        model.noteSortOrder
                     ]
             ]
         ]
@@ -342,94 +339,6 @@ noteInput locale model =
                     |> InputGroup.view
                 ]
             ]
-
-
-table : Locale -> Model -> Html Msg
-table locale { notes, noteSortOrder } =
-    let
-        localized fn =
-            Ln.strings locale |> fn
-
-        sortOrderIndicator =
-            case noteSortOrder of
-                OldestFirst ->
-                    "▲"
-
-                NewestFirst ->
-                    "▼"
-
-        sortByTimeStamp =
-            case noteSortOrder of
-                OldestFirst ->
-                    List.sortBy .timeStamp
-
-                NewestFirst ->
-                    List.sortBy (negate << .timeStamp)
-
-        oppositeSortOrder =
-            case noteSortOrder of
-                OldestFirst ->
-                    NewestFirst
-
-                NewestFirst ->
-                    OldestFirst
-
-        head =
-            Table.thead []
-                [ tr []
-                    [ th
-                        [ Table.cellAttr <| style [ Ln.textAlign locale ]
-                        , Table.cellAttr <| onClick (SetNoteSortOrder oppositeSortOrder)
-                        ]
-                        [ text <| localized .timeStamp ++ " " ++ sortOrderIndicator ]
-                    , th
-                        [ Table.cellAttr <|
-                            style
-                                [ Ln.textAlign locale
-                                , ( "width", "100%" )
-                                ]
-                        ]
-                        [ text <| localized .note ]
-                    ]
-                ]
-
-        body =
-            notes
-                |> sortByTimeStamp
-                |> List.map row
-                |> Table.tbody []
-
-        row note =
-            let
-                rowAttrs =
-                    if String.startsWith "!" note.text then
-                        [ Table.rowInfo ]
-                    else
-                        []
-            in
-                tr rowAttrs
-                    [ td []
-                        [ Button.button
-                            [ Button.onClick (SetPlayhead note.timeStamp)
-                            , Button.roleLink
-                            ]
-                            [ text <| TimeStamp.asString note.timeStamp ]
-                        ]
-                    , td
-                        [ Table.cellAttr <|
-                            style
-                                [ ( "width", "100%" )
-                                , ( "vertical-align", "middle" )
-                                ]
-                        ]
-                        [ text note.text ]
-                    ]
-    in
-        Table.table
-            { options = [ Table.small ]
-            , thead = head
-            , tbody = body
-            }
 
 
 

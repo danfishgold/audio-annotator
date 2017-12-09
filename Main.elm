@@ -1,4 +1,4 @@
-port module Main exposing (..)
+module Main exposing (..)
 
 import Html exposing (Html, program)
 import Html exposing (div, input, audio, span, h2, text)
@@ -8,6 +8,7 @@ import Keyboard exposing (KeyCode)
 import TimeStamp exposing (TimeStamp)
 import Config exposing (Config)
 import Source
+import Audio exposing (SeekDirection(..), SeekSize(..), controls)
 import Localization as Ln exposing (Locale)
 import Note exposing (Note)
 import Bootstrap.CDN as CDN
@@ -18,8 +19,10 @@ import Bootstrap.Table as Table exposing (th, tr, td)
 import Bootstrap.Form.InputGroup as InputGroup
 import Bootstrap.Form.Input as Input
 import Bootstrap.Button as Button
-import Assets
 import Json.Decode as Json
+
+
+--MODEL
 
 
 type alias Model =
@@ -54,46 +57,13 @@ type Msg
     | ConfigMsg Config.Msg
 
 
-type SeekDirection
-    = Forward
-    | Backward
-
-
 type NoteSortOrder
     = OldestFirst
     | NewestFirst
 
 
-type SeekSize
-    = Small
-    | Big
 
-
-port pauseUnpause : String -> Cmd msg
-
-
-port paused : (() -> msg) -> Sub msg
-
-
-port played : (() -> msg) -> Sub msg
-
-
-port seek : ( String, Int ) -> Cmd msg
-
-
-port setPlayhead : ( String, Int ) -> Cmd msg
-
-
-port setUrl : ( String, String ) -> Cmd msg
-
-
-port setFileSource : ( String, String ) -> Cmd msg
-
-
-port timeStamp : (( TimeStamp, TimeStamp ) -> msg) -> Sub msg
-
-
-port isReady : (Bool -> msg) -> Sub msg
+--INIT
 
 
 init : String -> ( Model, Cmd Msg )
@@ -108,34 +78,37 @@ init url =
       , noteSortOrder = OldestFirst
       , config = Config.default
       }
-    , setUrl ( "audio", url )
+    , Audio.setUrl ( "audio", url )
     )
+
+
+
+-- SUBSCRIPTIONS
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ Keyboard.ups KeyUp
-        , timeStamp SetTimeStamp
-        , isReady IsReady
-        , paused (always Paused)
-        , played (always Unpaused)
+        , Audio.timeStamp SetTimeStamp
+        , Audio.isReady IsReady
+        , Audio.paused (always Paused)
+        , Audio.played (always Unpaused)
         ]
 
 
-listRemove : Int -> List a -> List a
-listRemove idx lst =
-    List.take idx lst ++ List.drop (idx + 1) lst
+
+-- UPDATE
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         EditUrl url ->
-            ( { model | url = url }, setUrl ( "audio", url ) )
+            ( { model | url = url }, Audio.setUrl ( "audio", url ) )
 
         SetFileSource ->
-            ( model, setFileSource ( "file-input", "audio" ) )
+            ( model, Audio.setFileSource ( "file-input", "audio" ) )
 
         IsReady ready ->
             ( { model | ready = ready }, Cmd.none )
@@ -144,7 +117,7 @@ update msg model =
             ( { model | noteSortOrder = order }, Cmd.none )
 
         PauseUnpause ->
-            ( model, pauseUnpause "audio" )
+            ( model, Audio.pauseUnpause "audio" )
 
         Paused ->
             ( { model | paused = True }, Cmd.none )
@@ -170,10 +143,10 @@ update msg model =
                         Backward ->
                             -amount
             in
-                ( model, seek ( "audio", value ) )
+                ( model, Audio.seek ( "audio", value ) )
 
         SetPlayhead timeStamp ->
-            ( model, setPlayhead ( "audio", timeStamp ) )
+            ( model, Audio.setPlayhead ( "audio", timeStamp ) )
 
         SetCurrentNoteText noteText ->
             if model.currentNote.text == "" && noteText == " " then
@@ -260,6 +233,15 @@ update msg model =
                 ( { newModel | config = Config.update message model.config }, Cmd.none )
 
 
+listRemove : Int -> List a -> List a
+listRemove idx lst =
+    List.take idx lst ++ List.drop (idx + 1) lst
+
+
+
+-- VIEW
+
+
 view : Locale -> Model -> Html Msg
 view locale model =
     Grid.container [ Ln.dir locale ]
@@ -272,7 +254,7 @@ view locale model =
             Source.FileInput ->
                 fileInput locale model
         , div [ hidden <| not model.ready ]
-            [ audioControls locale model "50px"
+            [ Audio.controls Seek PauseUnpause locale model.paused "50px"
             , h2 [] [ text (Ln.strings locale).allNotes ]
             , noteInput locale model
             , if List.isEmpty model.notes then
@@ -283,7 +265,7 @@ view locale model =
                         [ Button.roleLink
                         , Button.attrs
                             [ id "clipboard-copy-button"
-                            , attribute "data-clipboard-text" (allNoteText model.notes)
+                            , attribute "data-clipboard-text" (Note.listToString model.notes)
                             ]
                         ]
                         [ text (Ln.strings locale).copyToClipboard ]
@@ -291,14 +273,6 @@ view locale model =
                     ]
             ]
         ]
-
-
-allNoteText : List Note -> String
-allNoteText notes =
-    notes
-        |> List.sortBy .timeStamp
-        |> List.map (\{ timeStamp, text } -> TimeStamp.asString timeStamp ++ "\t" ++ text)
-        |> String.join "\n"
 
 
 urlInput : Locale -> Model -> Html Msg
@@ -324,34 +298,6 @@ fileInput locale model =
         , Html.Events.on "change" (Json.succeed SetFileSource)
         ]
         []
-
-
-noUserSelect : List ( String, String )
-noUserSelect =
-    [ ( "-webkit-touch-callout", "none" )
-    , ( "-webkit-user-select", "none" )
-    , ( "-khtml-user-select", "none" )
-    , ( "-moz-user-select", "none" )
-    , ( "-ms-user-select", "none" )
-    , ( "user-select", "none" )
-    ]
-
-
-audioControls : Locale -> Model -> String -> Html Msg
-audioControls locale model sz =
-    div []
-        [ audio [ id "audio", controls False ] []
-        , div [ dir "ltr", id "controls", style (( "text-align", "center" ) :: noUserSelect) ]
-            [ span [ onClick (Seek Big Backward) ] [ Assets.previous sz ]
-            , span [ onClick (Seek Small Backward) ] [ Assets.rewind sz ]
-            , if model.paused then
-                span [ onClick PauseUnpause ] [ Assets.play sz ]
-              else
-                span [ onClick PauseUnpause ] [ Assets.pause sz ]
-            , span [ onClick (Seek Small Forward) ] [ Assets.fastForward sz ]
-            , span [ onClick (Seek Big Forward) ] [ Assets.next sz ]
-            ]
-        ]
 
 
 noteInput : Locale -> Model -> Html Msg

@@ -1,7 +1,5 @@
-module Note exposing (Note, encode, decoder)
+module Note exposing (Note, encode, decoder, listToString)
 
-import Html exposing (Html)
-import Html exposing (span, p, b, text)
 import TimeStamp exposing (TimeStamp)
 import Json.Encode as Encode
 import Json.Decode as Decode exposing (Decoder)
@@ -24,3 +22,16 @@ encode note =
         [ ( "timeStamp", Encode.int note.timeStamp )
         , ( "text", Encode.string note.text )
         ]
+
+
+listToString : List Note -> String
+listToString notes =
+    notes
+        |> List.sortBy .timeStamp
+        |> List.map toString
+        |> String.join "\n"
+
+
+toString : Note -> String
+toString { timeStamp, text } =
+    TimeStamp.asString timeStamp ++ "\t" ++ text

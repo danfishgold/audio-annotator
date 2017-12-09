@@ -172,7 +172,10 @@ update msg model =
         SetTimeStamp ( timeStamp, remainingTime ) ->
             let
                 newModel =
-                    { model | timeStamp = timeStamp, remainingTime = remainingTime }
+                    { model
+                        | timeStamp = timeStamp
+                        , remainingTime = remainingTime
+                    }
             in
                 if model.currentNote.text == "" then
                     update (SetCurrentNoteTime timeStamp) newModel
@@ -188,7 +191,8 @@ update msg model =
         KeyUp 13 ->
             -- Enter
             if model.ready && not (String.isEmpty model.currentNote.text) then
-                update (AddNote model.currentNote) { model | currentNote = Note model.timeStamp "" }
+                update (AddNote model.currentNote)
+                    { model | currentNote = Note model.timeStamp "" }
             else
                 ( model, Cmd.none )
 
@@ -230,7 +234,9 @@ update msg model =
                         _ ->
                             model
             in
-                ( { newModel | config = Config.update message model.config }, Cmd.none )
+                ( { newModel | config = Config.update message model.config }
+                , Cmd.none
+                )
 
 
 listRemove : Int -> List a -> List a
@@ -265,7 +271,8 @@ view locale model =
                         [ Button.roleLink
                         , Button.attrs
                             [ id "clipboard-copy-button"
-                            , attribute "data-clipboard-text" (Note.listToString model.notes)
+                            , attribute "data-clipboard-text"
+                                (Note.listToString model.notes)
                             ]
                         ]
                         [ text (Ln.strings locale).copyToClipboard ]
@@ -284,7 +291,9 @@ urlInput locale model =
             , Input.attrs [ dir "ltr" ]
             ]
         )
-        |> Ln.predecessors locale [ InputGroup.span [] [ text (Ln.strings locale).fileUrl ] ]
+        |> Ln.predecessors locale
+            [ InputGroup.span [] [ text (Ln.strings locale).fileUrl ]
+            ]
         |> InputGroup.attrs [ dir "ltr" ]
         |> InputGroup.view
 
@@ -302,37 +311,44 @@ fileInput locale model =
 
 noteInput : Locale -> Model -> Html Msg
 noteInput locale model =
-    Grid.row [ Row.middleXs ]
-        [ Grid.col [ Col.xs2 ] [ text (Ln.strings locale).newNote ]
-        , Grid.col [ Col.xs10 ]
-            [ InputGroup.config
-                (InputGroup.text
-                    [ Input.onInput SetCurrentNoteText
-                    , Input.value model.currentNote.text
-                    , Input.attrs [ Ln.dir locale ]
-                    ]
-                )
-                |> Ln.predecessors locale
-                    [ InputGroup.span []
-                        [ text <| TimeStamp.asString model.currentNote.timeStamp ]
-                    ]
-                |> Ln.successors locale
-                    [ InputGroup.span []
-                        [ text "-"
-                        , text <| TimeStamp.asString (model.remainingTime - model.currentNote.timeStamp + model.timeStamp)
+    let
+        currentTimeStamp =
+            model.currentNote.timeStamp
+
+        remainingTimeStamp =
+            model.remainingTime - model.currentNote.timeStamp + model.timeStamp
+    in
+        Grid.row [ Row.middleXs ]
+            [ Grid.col [ Col.xs2 ] [ text (Ln.strings locale).newNote ]
+            , Grid.col [ Col.xs10 ]
+                [ InputGroup.config
+                    (InputGroup.text
+                        [ Input.onInput SetCurrentNoteText
+                        , Input.value model.currentNote.text
+                        , Input.attrs [ Ln.dir locale ]
                         ]
-                    ]
-                |> InputGroup.attrs [ dir "ltr" ]
-                |> InputGroup.view
+                    )
+                    |> Ln.predecessors locale
+                        [ InputGroup.span []
+                            [ text <| TimeStamp.asString currentTimeStamp ]
+                        ]
+                    |> Ln.successors locale
+                        [ InputGroup.span []
+                            [ text "-"
+                            , text <| TimeStamp.asString remainingTimeStamp
+                            ]
+                        ]
+                    |> InputGroup.attrs [ dir "ltr" ]
+                    |> InputGroup.view
+                ]
             ]
-        ]
 
 
 table : Locale -> Model -> Html Msg
 table locale { notes, noteSortOrder } =
     let
-        localizedText fn =
-            text (Ln.strings locale |> fn)
+        localized fn =
+            Ln.strings locale |> fn
 
         sortOrderIndicator =
             case noteSortOrder of
@@ -365,9 +381,15 @@ table locale { notes, noteSortOrder } =
                         [ Table.cellAttr <| style [ Ln.textAlign locale ]
                         , Table.cellAttr <| onClick (SetNoteSortOrder oppositeSortOrder)
                         ]
-                        [ text <| (Ln.strings locale).timeStamp ++ " " ++ sortOrderIndicator ]
-                    , th [ Table.cellAttr <| style [ Ln.textAlign locale, ( "width", "100%" ) ] ]
-                        [ localizedText .note ]
+                        [ text <| localized .timeStamp ++ " " ++ sortOrderIndicator ]
+                    , th
+                        [ Table.cellAttr <|
+                            style
+                                [ Ln.textAlign locale
+                                , ( "width", "100%" )
+                                ]
+                        ]
+                        [ text <| localized .note ]
                     ]
                 ]
 
@@ -387,10 +409,20 @@ table locale { notes, noteSortOrder } =
             in
                 tr rowAttrs
                     [ td []
-                        [ Button.button [ Button.onClick (SetPlayhead note.timeStamp), Button.roleLink ]
+                        [ Button.button
+                            [ Button.onClick (SetPlayhead note.timeStamp)
+                            , Button.roleLink
+                            ]
                             [ text <| TimeStamp.asString note.timeStamp ]
                         ]
-                    , td [ Table.cellAttr <| style [ ( "width", "100%" ), ( "vertical-align", "middle" ) ] ] [ text note.text ]
+                    , td
+                        [ Table.cellAttr <|
+                            style
+                                [ ( "width", "100%" )
+                                , ( "vertical-align", "middle" )
+                                ]
+                        ]
+                        [ text note.text ]
                     ]
     in
         Table.table
@@ -398,6 +430,10 @@ table locale { notes, noteSortOrder } =
             , thead = head
             , tbody = body
             }
+
+
+
+-- MAIN
 
 
 main : Program Never Model Msg

@@ -70,11 +70,19 @@ port isReady : (Bool -> msg) -> Sub msg
 -- CONTROLS
 
 
-controls : (SeekSize -> SeekDirection -> msg) -> msg -> Locale -> Bool -> String -> Html msg
+type alias SeekMsg msg =
+    SeekSize -> SeekDirection -> msg
+
+
+controls : SeekMsg msg -> msg -> Locale -> Bool -> String -> Html msg
 controls seek pauseUnpause locale paused sz =
     div []
         [ audio [ id "audio", Html.Attributes.controls False ] []
-        , div [ dir "ltr", id "controls", style (( "text-align", "center" ) :: noUserSelect) ]
+        , div
+            [ dir "ltr"
+            , id "controls"
+            , style (( "text-align", "center" ) :: noUserSelect)
+            ]
             [ span [ onClick (seek Big Backward) ] [ Assets.previous sz ]
             , span [ onClick (seek Small Backward) ] [ Assets.rewind sz ]
             , if paused then

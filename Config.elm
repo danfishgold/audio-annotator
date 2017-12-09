@@ -1,6 +1,6 @@
 module Config exposing (Config, default, Msg(..), update, view)
 
-import Localization as L10N exposing (Locale(..))
+import Localization as Ln exposing (Locale(..))
 import Html exposing (Html, div, span, h2, ul, li, text)
 import Html.Attributes exposing (dir, value, style, hidden, selected)
 import Html.Events exposing (onClick)
@@ -55,7 +55,7 @@ view : Locale -> Config -> Bool -> Html Msg
 view locale config ready =
     let
         localizedText fn =
-            text (L10N.strings locale |> .config |> fn)
+            text (Ln.strings locale |> .config |> fn)
 
         stringToInt =
             String.toFloat >> Result.withDefault 0 >> floor
@@ -108,7 +108,7 @@ view locale config ready =
                 SetBigSeek
 
         localeSelect =
-            span [ locale |> L10N.next |> SetLocale |> onClick ] [ Assets.globe "3em" ]
+            span [ locale |> Ln.next |> SetLocale |> onClick ] [ Assets.globe "3em" ]
     in
         div []
             [ localeSelect

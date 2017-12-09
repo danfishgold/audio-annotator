@@ -8,7 +8,7 @@ import Keyboard exposing (KeyCode)
 import TimeStamp exposing (TimeStamp)
 import Config exposing (Config)
 import Source
-import Localization as L10N exposing (Locale)
+import Localization as Ln exposing (Locale)
 import Note exposing (Note)
 import Bootstrap.CDN as CDN
 import Bootstrap.Grid as Grid
@@ -262,7 +262,7 @@ update msg model =
 
 view : Locale -> Model -> Html Msg
 view locale model =
-    Grid.container [ L10N.dir locale ]
+    Grid.container [ Ln.dir locale ]
         [ CDN.stylesheet
         , Html.map ConfigMsg (Config.view locale model.config model.ready)
         , case model.config.sourceType of
@@ -273,7 +273,7 @@ view locale model =
                 fileInput locale model
         , div [ hidden <| not model.ready ]
             [ audioControls locale model "50px"
-            , h2 [] [ text (L10N.strings locale).allNotes ]
+            , h2 [] [ text (Ln.strings locale).allNotes ]
             , noteInput locale model
             , if List.isEmpty model.notes then
                 text ""
@@ -286,7 +286,7 @@ view locale model =
                             , attribute "data-clipboard-text" (allNoteText model.notes)
                             ]
                         ]
-                        [ text (L10N.strings locale).copyToClipboard ]
+                        [ text (Ln.strings locale).copyToClipboard ]
                     , table locale model
                     ]
             ]
@@ -310,7 +310,7 @@ urlInput locale model =
             , Input.attrs [ dir "ltr" ]
             ]
         )
-        |> L10N.predecessors locale [ InputGroup.span [] [ text (L10N.strings locale).fileUrl ] ]
+        |> Ln.predecessors locale [ InputGroup.span [] [ text (Ln.strings locale).fileUrl ] ]
         |> InputGroup.attrs [ dir "ltr" ]
         |> InputGroup.view
 
@@ -357,20 +357,20 @@ audioControls locale model sz =
 noteInput : Locale -> Model -> Html Msg
 noteInput locale model =
     Grid.row [ Row.middleXs ]
-        [ Grid.col [ Col.xs2 ] [ text (L10N.strings locale).newNote ]
+        [ Grid.col [ Col.xs2 ] [ text (Ln.strings locale).newNote ]
         , Grid.col [ Col.xs10 ]
             [ InputGroup.config
                 (InputGroup.text
                     [ Input.onInput SetCurrentNoteText
                     , Input.value model.currentNote.text
-                    , Input.attrs [ L10N.dir locale ]
+                    , Input.attrs [ Ln.dir locale ]
                     ]
                 )
-                |> L10N.predecessors locale
+                |> Ln.predecessors locale
                     [ InputGroup.span []
                         [ text <| TimeStamp.asString model.currentNote.timeStamp ]
                     ]
-                |> L10N.successors locale
+                |> Ln.successors locale
                     [ InputGroup.span []
                         [ text "-"
                         , text <| TimeStamp.asString (model.remainingTime - model.currentNote.timeStamp + model.timeStamp)
@@ -386,7 +386,7 @@ table : Locale -> Model -> Html Msg
 table locale { notes, noteSortOrder } =
     let
         localizedText fn =
-            text (L10N.strings locale |> fn)
+            text (Ln.strings locale |> fn)
 
         sortOrderIndicator =
             case noteSortOrder of
@@ -416,11 +416,11 @@ table locale { notes, noteSortOrder } =
             Table.thead []
                 [ tr []
                     [ th
-                        [ Table.cellAttr <| style [ L10N.textAlign locale ]
+                        [ Table.cellAttr <| style [ Ln.textAlign locale ]
                         , Table.cellAttr <| onClick (SetNoteSortOrder oppositeSortOrder)
                         ]
-                        [ text <| (L10N.strings locale).timeStamp ++ " " ++ sortOrderIndicator ]
-                    , th [ Table.cellAttr <| style [ L10N.textAlign locale, ( "width", "100%" ) ] ]
+                        [ text <| (Ln.strings locale).timeStamp ++ " " ++ sortOrderIndicator ]
+                    , th [ Table.cellAttr <| style [ Ln.textAlign locale, ( "width", "100%" ) ] ]
                         [ localizedText .note ]
                     ]
                 ]

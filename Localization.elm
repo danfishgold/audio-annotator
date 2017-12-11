@@ -67,15 +67,21 @@ type alias Strings =
     , timeStamp : String
     , note : String
     , copyToClipboard : String
+    , source : SourceString
     , config : ConfigStrings
+    }
+
+
+type alias SourceString =
+    { source : String
+    , firstYouMustSupply : String
+    , audioUrl : String
+    , localFile : String
     }
 
 
 type alias ConfigStrings =
     { title : String
-    , firstYouMustSupply : String
-    , audioUrl : String
-    , localFile : String
     , onLeftRightArrows : String
     , onLeftRightButtons : String
     , seconds : String
@@ -102,11 +108,14 @@ hebrewStrings =
     , timeStamp = "זמן"
     , note = "הערה"
     , copyToClipboard = "העתק את כל ההערות"
-    , config =
-        { title = "הוראות / הגדרות"
+    , source =
+        { source = "מקור"
         , firstYouMustSupply = "קודם כל צריך לספק "
         , audioUrl = "לינק לקובץ"
         , localFile = "קובץ מקומי"
+        }
+    , config =
+        { title = "הוראות / הגדרות"
         , onLeftRightArrows = "לחיצה על החיצים ימינה ושמאלה במקלדת תזוז קדימה ואחורה ב"
         , onLeftRightButtons = "לחיצה על החיצים למעלה ולמטה במקלדת תזוז קדימה ואחורה ב"
         , seconds = "שניות"
@@ -124,11 +133,14 @@ englishStrings =
     , timeStamp = "Time"
     , note = "Note"
     , copyToClipboard = "Copy all notes"
-    , config =
-        { title = "Instructions / Settings"
+    , source =
+        { source = "source"
         , firstYouMustSupply = "First, you must supply a "
         , audioUrl = "link"
         , localFile = "local file"
+        }
+    , config =
+        { title = "Instructions / Settings"
         , onLeftRightArrows = "Use the left and right keyboard keys to move forward / back by "
         , onLeftRightButtons = "Use the up and down keyboard keys to move forward / back by "
         , seconds = "seconds"

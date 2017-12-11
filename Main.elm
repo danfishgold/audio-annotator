@@ -3,44 +3,37 @@ module Main exposing (..)
 import Html exposing (Html, program)
 import Html exposing (div, input, audio, span, h2, text)
 import Html.Attributes exposing (attribute, hidden, dir, id, type_, accept, controls, style)
-import Html.Events exposing (onClick)
 import Keyboard exposing (KeyCode)
 import TimeStamp exposing (TimeStamp)
 import Config exposing (Config)
-import Source
+import Source exposing (Source)
 import Audio exposing (SeekDirection(..), SeekSize(..), controls)
 import NoteTable exposing (view, SortOrder(..))
 import Localization as Ln exposing (Locale)
 import Note exposing (Note)
 import Bootstrap.CDN as CDN
 import Bootstrap.Grid as Grid
-import Bootstrap.Grid.Row as Row
-import Bootstrap.Grid.Col as Col
-import Bootstrap.Form.InputGroup as InputGroup
-import Bootstrap.Form.Input as Input
 import Bootstrap.Button as Button
-import Json.Decode as Json
 
 
 --MODEL
 
 
 type alias Model =
-    { url : String
-    , ready : Bool
+    { ready : Bool
     , paused : Bool
     , timeStamp : TimeStamp
     , remainingTime : TimeStamp
     , currentNote : Note
     , notes : List Note
     , noteSortOrder : NoteTable.SortOrder
+    , source : Source
     , config : Config
     }
 
 
 type Msg
-    = EditUrl String
-    | SetFileSource
+    = SetSource Source
     | IsReady Bool
     | SetNoteSortOrder NoteTable.SortOrder
     | PauseUnpause
@@ -63,14 +56,14 @@ type Msg
 
 init : String -> ( Model, Cmd Msg )
 init url =
-    ( { url = url
-      , ready = False
+    ( { ready = False
       , paused = True
       , timeStamp = 0
       , remainingTime = 0
       , currentNote = Note 0 ""
       , notes = []
       , noteSortOrder = OldestFirst
+      , source = Source.Url url
       , config = Config.default
       }
     , Audio.setUrl ( "audio", url )
@@ -99,11 +92,15 @@ subscriptions model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        EditUrl url ->
-            ( { model | url = url }, Audio.setUrl ( "audio", url ) )
+        SetSource source ->
+            ( { model | source = source }
+            , case source of
+                Source.Url url ->
+                    Audio.setUrl ( "audio", url )
 
-        SetFileSource ->
-            ( model, Audio.setFileSource ( "file-input", "audio" ) )
+                Source.File ->
+                    Audio.setFileSource ( "file-input", "audio" )
+            )
 
         IsReady ready ->
             ( { model | ready = ready }, Cmd.none )
@@ -220,18 +217,7 @@ update msg model =
                 ( model, Cmd.none )
 
         ConfigMsg message ->
-            let
-                newModel =
-                    case message of
-                        Config.SetSourceType _ ->
-                            { model | url = "", ready = False }
-
-                        _ ->
-                            model
-            in
-                ( { newModel | config = Config.update message model.config }
-                , Cmd.none
-                )
+            ( { model | config = Config.update message model.config }, Cmd.none )
 
 
 listRemove : Int -> List a -> List a
@@ -247,17 +233,17 @@ view : Locale -> Model -> Html Msg
 view locale model =
     Grid.container [ Ln.dir locale ]
         [ CDN.stylesheet
-        , Html.map ConfigMsg (Config.view locale model.config model.ready)
-        , case model.config.sourceType of
-            Source.UrlInput ->
-                urlInput locale model
-
-            Source.FileInput ->
-                fileInput locale model
-        , div [ hidden <| not model.ready ]
-            [ Audio.controls Seek PauseUnpause locale model.paused "50px"
+        , Html.map ConfigMsg (Config.localeSelect locale)
+        , Source.view SetSource locale model.source
+        , div
+            [ hidden (not model.ready) ]
+            [ Html.map ConfigMsg (Config.view locale model.config)
+            , Audio.controls Seek PauseUnpause locale model.paused "50px"
             , h2 [] [ text (Ln.strings locale).allNotes ]
-            , noteInput locale model
+            , (Note.input SetCurrentNoteText locale)
+                model.currentNote
+                model.timeStamp
+                model.remainingTime
             , if List.isEmpty model.notes then
                 text ""
               else
@@ -277,68 +263,6 @@ view locale model =
                     ]
             ]
         ]
-
-
-urlInput : Locale -> Model -> Html Msg
-urlInput locale model =
-    InputGroup.config
-        (InputGroup.url
-            [ Input.onInput EditUrl
-            , Input.value model.url
-            , Input.attrs [ dir "ltr" ]
-            ]
-        )
-        |> Ln.predecessors locale
-            [ InputGroup.span [] [ text (Ln.strings locale).fileUrl ]
-            ]
-        |> InputGroup.attrs [ dir "ltr" ]
-        |> InputGroup.view
-
-
-fileInput : Locale -> Model -> Html Msg
-fileInput locale model =
-    input
-        [ type_ "file"
-        , accept "audio/*"
-        , id "file-input"
-        , Html.Events.on "change" (Json.succeed SetFileSource)
-        ]
-        []
-
-
-noteInput : Locale -> Model -> Html Msg
-noteInput locale model =
-    let
-        currentTimeStamp =
-            model.currentNote.timeStamp
-
-        remainingTimeStamp =
-            model.remainingTime - model.currentNote.timeStamp + model.timeStamp
-    in
-        Grid.row [ Row.middleXs ]
-            [ Grid.col [ Col.xs2 ] [ text (Ln.strings locale).newNote ]
-            , Grid.col [ Col.xs10 ]
-                [ InputGroup.config
-                    (InputGroup.text
-                        [ Input.onInput SetCurrentNoteText
-                        , Input.value model.currentNote.text
-                        , Input.attrs [ Ln.dir locale ]
-                        ]
-                    )
-                    |> Ln.predecessors locale
-                        [ InputGroup.span []
-                            [ text <| TimeStamp.asString currentTimeStamp ]
-                        ]
-                    |> Ln.successors locale
-                        [ InputGroup.span []
-                            [ text "-"
-                            , text <| TimeStamp.asString remainingTimeStamp
-                            ]
-                        ]
-                    |> InputGroup.attrs [ dir "ltr" ]
-                    |> InputGroup.view
-                ]
-            ]
 
 
 

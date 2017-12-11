@@ -1,8 +1,16 @@
-module Note exposing (Note, encode, decoder, listToString)
+module Note exposing (Note, encode, decoder, input, listToString)
 
 import TimeStamp exposing (TimeStamp)
 import Json.Encode as Encode
 import Json.Decode as Decode exposing (Decoder)
+import Html exposing (Html, text)
+import Html.Attributes exposing (dir)
+import Localization as Ln exposing (Locale)
+import Bootstrap.Grid as Grid
+import Bootstrap.Grid.Row as Row
+import Bootstrap.Grid.Col as Col
+import Bootstrap.Form.InputGroup as InputGroup
+import Bootstrap.Form.Input as Input
 
 
 type alias Note =
@@ -35,3 +43,38 @@ listToString notes =
 toString : Note -> String
 toString { timeStamp, text } =
     TimeStamp.asString timeStamp ++ "\t" ++ text
+
+
+input : (String -> msg) -> Locale -> Note -> TimeStamp -> TimeStamp -> Html msg
+input setCurrentNoteText locale currentNote timeStamp remainingTime =
+    let
+        currentTimeStamp =
+            currentNote.timeStamp
+
+        remainingTimeStamp =
+            remainingTime - currentNote.timeStamp + timeStamp
+    in
+        Grid.row [ Row.middleXs ]
+            [ Grid.col [ Col.xs2 ] [ text (Ln.strings locale).newNote ]
+            , Grid.col [ Col.xs10 ]
+                [ InputGroup.config
+                    (InputGroup.text
+                        [ Input.onInput setCurrentNoteText
+                        , Input.value currentNote.text
+                        , Input.attrs [ Ln.dir locale ]
+                        ]
+                    )
+                    |> Ln.predecessors locale
+                        [ InputGroup.span []
+                            [ text <| TimeStamp.asString currentTimeStamp ]
+                        ]
+                    |> Ln.successors locale
+                        [ InputGroup.span []
+                            [ text "-"
+                            , text <| TimeStamp.asString remainingTimeStamp
+                            ]
+                        ]
+                    |> InputGroup.attrs [ dir "ltr" ]
+                    |> InputGroup.view
+                ]
+            ]

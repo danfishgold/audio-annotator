@@ -93,14 +93,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         SetSource source ->
-            ( { model | source = source }
-            , case source of
-                Source.Url url ->
-                    Audio.setUrl ( "audio", url )
-
-                Source.File ->
-                    Audio.setFileSource ( "file-input", "audio" )
-            )
+            ( { model | source = source }, Source.reload source )
 
         IsReady ready ->
             ( { model | ready = ready }, Cmd.none )

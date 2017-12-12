@@ -1,4 +1,4 @@
-module Source exposing (Source(..), view)
+module Source exposing (Source(..), view, reload)
 
 import Html exposing (Html, div, input, h2, text)
 import Html.Attributes exposing (type_, dir, accept, hidden, id)
@@ -9,6 +9,7 @@ import Bootstrap.Form.Input as Input
 import Bootstrap.Button as Button
 import Bootstrap.ButtonGroup as ButtonGroup
 import Json.Decode as Json
+import Audio
 
 
 type Source
@@ -28,6 +29,16 @@ view setSource locale source =
             , selection setSource locale source
             , input setSource locale source
             ]
+
+
+reload : Source -> Cmd msg
+reload source =
+    case source of
+        Url url ->
+            Audio.setUrl ( "audio", url )
+
+        File ->
+            Audio.setFileSource ( "file-input", "audio" )
 
 
 

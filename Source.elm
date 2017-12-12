@@ -3,13 +3,13 @@ module Source exposing (Source(..), view, reload)
 import Html exposing (Html, div, input, h2, text)
 import Html.Attributes exposing (type_, dir, accept, hidden, id)
 import Html.Events
-import Localization as Ln exposing (Locale)
-import Bootstrap.Form.InputGroup as InputGroup
-import Bootstrap.Form.Input as Input
 import Bootstrap.Button as Button
 import Bootstrap.ButtonGroup as ButtonGroup
+import Bootstrap.Form.Input as Input
+import Bootstrap.Form.InputGroup as InputGroup
 import Json.Decode as Json
 import Audio
+import Localization as Ln exposing (Locale)
 
 
 type Source

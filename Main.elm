@@ -1,19 +1,19 @@
 module Main exposing (..)
 
 import Html exposing (Html, program)
-import Html exposing (div, input, audio, span, h2, text)
-import Html.Attributes exposing (attribute, hidden, dir, id, type_, accept, controls, style)
-import Keyboard exposing (KeyCode)
-import TimeStamp exposing (TimeStamp)
-import Config exposing (Config)
-import Source exposing (Source)
-import Audio exposing (SeekDirection(..), SeekSize(..), controls)
-import NoteTable exposing (view, SortOrder(..))
-import Localization as Ln exposing (Locale)
-import Note exposing (Note)
+import Html exposing (div, h2, text)
+import Html.Attributes exposing (attribute, hidden, id)
+import Bootstrap.Button as Button
 import Bootstrap.CDN as CDN
 import Bootstrap.Grid as Grid
-import Bootstrap.Button as Button
+import Audio exposing (SeekDirection(..), SeekSize(..), controls)
+import Config exposing (Config)
+import Keyboard exposing (KeyCode)
+import Localization as Ln exposing (Locale)
+import Note exposing (Note)
+import NoteTable exposing (SortOrder(..))
+import Source exposing (Source)
+import TimeStamp exposing (TimeStamp)
 
 
 --MODEL

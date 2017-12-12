@@ -14,12 +14,12 @@ port module Audio
         , controls
         )
 
-import TimeStamp exposing (TimeStamp)
-import Localization as Ln exposing (Locale)
 import Html exposing (Html, div, span, audio)
 import Html.Attributes exposing (id, dir, style)
 import Html.Events exposing (onClick)
 import Assets
+import Localization as Ln exposing (Locale)
+import TimeStamp exposing (TimeStamp)
 
 
 -- SEEK

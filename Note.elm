@@ -1,16 +1,16 @@
 module Note exposing (Note, encode, decoder, input, listToString)
 
-import TimeStamp exposing (TimeStamp)
-import Json.Encode as Encode
-import Json.Decode as Decode exposing (Decoder)
 import Html exposing (Html, text)
 import Html.Attributes exposing (dir)
-import Localization as Ln exposing (Locale)
-import Bootstrap.Grid as Grid
-import Bootstrap.Grid.Row as Row
-import Bootstrap.Grid.Col as Col
-import Bootstrap.Form.InputGroup as InputGroup
 import Bootstrap.Form.Input as Input
+import Bootstrap.Form.InputGroup as InputGroup
+import Bootstrap.Grid as Grid
+import Bootstrap.Grid.Col as Col
+import Bootstrap.Grid.Row as Row
+import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode
+import Localization as Ln exposing (Locale)
+import TimeStamp exposing (TimeStamp)
 
 
 type alias Note =

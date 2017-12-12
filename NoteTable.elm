@@ -1,13 +1,13 @@
 module NoteTable exposing (SortOrder(..), view)
 
-import Localization as Ln exposing (Locale)
 import Html exposing (Html, text)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
-import Bootstrap.Table as Table exposing (th, tr, td)
 import Bootstrap.Button as Button
-import TimeStamp exposing (TimeStamp)
+import Bootstrap.Table as Table exposing (th, tr, td)
+import Localization as Ln exposing (Locale)
 import Note exposing (Note)
+import TimeStamp exposing (TimeStamp)
 
 
 -- ORDER

@@ -1,11 +1,11 @@
 module Config exposing (Config, default, Msg(..), update, view, localeSelect)
 
-import Localization as Ln exposing (Locale(..))
 import Html exposing (Html, div, span, h2, ul, li, text)
-import Html.Attributes exposing (dir, value, style, hidden, selected)
+import Html.Attributes exposing (value, style, selected)
 import Html.Events exposing (onClick)
 import Bootstrap.Form.Select as Select
 import Assets
+import Localization as Ln exposing (Locale(..))
 
 
 type alias Config =

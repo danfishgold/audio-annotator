@@ -14,7 +14,9 @@ import TimeStamp exposing (TimeStamp)
 
 
 type alias Note =
-    { timeStamp : TimeStamp, text : String }
+    { timeStamp : TimeStamp
+    , text : String
+    }
 
 
 decoder : Decoder Note

@@ -82,13 +82,13 @@ input setSource locale source =
         Url url ->
             div []
                 [ urlInput setSource locale url
-                , div [ hidden True ] [ fileInput setSource locale ]
+                , div [ hidden True ] [ fileInput setSource ]
                 ]
 
         File ->
             div []
                 [ div [ hidden True ] [ urlInput setSource locale "" ]
-                , fileInput setSource locale
+                , fileInput setSource
                 ]
 
 
@@ -108,8 +108,8 @@ urlInput setSource locale url =
         |> InputGroup.view
 
 
-fileInput : (Source -> msg) -> Locale -> Html msg
-fileInput setSource locale =
+fileInput : (Source -> msg) -> Html msg
+fileInput setSource =
     Html.input
         [ type_ "file"
         , accept "audio/*"

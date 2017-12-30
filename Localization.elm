@@ -1,7 +1,7 @@
 module Localization exposing (Locale(..), next, strings, dir, textAlign, predecessors, successors)
 
 import Html
-import Html.Attributes exposing (dir)
+import Html.Attributes
 import Bootstrap.Form.InputGroup as InputGroup
 
 

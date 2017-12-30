@@ -1,13 +1,12 @@
-module Main exposing (..)
+module Main exposing (main)
 
-import Html exposing (Html, program)
-import Html exposing (div, h2, text)
+import Html exposing (Html, program, div, h2, text)
 import Html.Attributes exposing (attribute, hidden, id)
 import Bootstrap.Button as Button
 import Bootstrap.CDN as CDN
 import Bootstrap.Grid as Grid
 import Array exposing (Array)
-import Audio exposing (SeekDirection(..), SeekSize(..), controls)
+import Audio exposing (SeekDirection(..), SeekSize(..))
 import Config exposing (Config)
 import Keyboard exposing (KeyCode)
 import Localization as Ln exposing (Locale)
@@ -83,7 +82,7 @@ init url =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Sub.batch
         [ Keyboard.ups KeyUp
         , Audio.timeStamp SetTimeStamp
@@ -141,7 +140,7 @@ update msg model =
         SetPlayhead timeStamp ->
             ( model, Audio.setPlayhead ( "audio", timeStamp ) )
 
-        SetNoteText current noteText ->
+        SetNoteText _ noteText ->
             if model.newNote.text == "" && noteText == " " then
                 ( model, Cmd.none )
             else
@@ -212,7 +211,7 @@ update msg model =
                         -- Down
                         update (Seek Big Backward) model
 
-                    key ->
+                    _ ->
                         ( model, Cmd.none )
             else
                 ( model, Cmd.none )
@@ -253,9 +252,11 @@ view locale model =
         , div
             [ hidden (not model.ready) ]
             [ Html.map ConfigMsg (Config.view locale model.config)
-            , Audio.controls Seek PauseUnpause locale model.paused "50px"
+            , Audio.controls Seek PauseUnpause model.paused "50px"
             , h2 [] [ text (Ln.strings locale).allNotes ]
-            , (Note.input (SetNoteText New) locale)
+            , Note.input
+                (SetNoteText New)
+                locale
                 model.newNote
                 model.timeStamp
                 model.remainingTime
@@ -272,7 +273,10 @@ view locale model =
                             ]
                         ]
                         [ text (Ln.strings locale).copyToClipboard ]
-                    , (NoteTable.view SetNoteSortOrder SetPlayhead locale)
+                    , NoteTable.view
+                        SetNoteSortOrder
+                        SetPlayhead
+                        locale
                         (Array.toList model.notes)
                         model.noteSortOrder
                     ]

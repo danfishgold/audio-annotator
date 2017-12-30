@@ -18,7 +18,6 @@ import Html exposing (Html, div, span, audio)
 import Html.Attributes exposing (id, dir, style)
 import Html.Events exposing (onClick)
 import Assets
-import Localization as Ln exposing (Locale)
 import TimeStamp exposing (TimeStamp)
 
 
@@ -74,8 +73,8 @@ type alias SeekMsg msg =
     SeekSize -> SeekDirection -> msg
 
 
-controls : SeekMsg msg -> msg -> Locale -> Bool -> String -> Html msg
-controls seek pauseUnpause locale paused sz =
+controls : SeekMsg msg -> msg -> Bool -> String -> Html msg
+controls seek pauseUnpause paused sz =
     div []
         [ audio [ id "audio", Html.Attributes.controls False ] []
         , div

@@ -1,9 +1,18 @@
-module Assets exposing (..)
+module Assets
+    exposing
+        ( globe
+        , previous
+        , rewind
+        , fastForward
+        , next
+        , pause
+        , play
+        )
 
 import Html exposing (Html)
 import Html.Attributes exposing (attribute)
-import Svg exposing (..)
-import Svg.Attributes exposing (..)
+import Svg exposing (svg, text)
+import Svg.Attributes exposing (width, height, viewBox, d)
 
 
 globe : String -> Html msg

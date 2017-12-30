@@ -6,6 +6,7 @@ import Html.Attributes exposing (attribute, hidden, id)
 import Bootstrap.Button as Button
 import Bootstrap.CDN as CDN
 import Bootstrap.Grid as Grid
+import Array exposing (Array)
 import Audio exposing (SeekDirection(..), SeekSize(..), controls)
 import Config exposing (Config)
 import Keyboard exposing (KeyCode)
@@ -24,8 +25,9 @@ type alias Model =
     , paused : Bool
     , timeStamp : TimeStamp
     , remainingTime : TimeStamp
-    , currentNote : Note
-    , notes : List Note
+    , newNote : Note
+    , notes : Array Note
+    , currentNote : CurrentNote
     , noteSortOrder : NoteTable.SortOrder
     , source : Source
     , config : Config
@@ -41,13 +43,18 @@ type Msg
     | Unpaused
     | Seek SeekSize SeekDirection
     | SetPlayhead TimeStamp
-    | SetCurrentNoteText String
-    | SetCurrentNoteTime TimeStamp
+    | SetNoteText CurrentNote String
+    | SetNewNoteTime TimeStamp
     | AddNote Note
     | DeleteNote Int
     | SetTimeStamp ( TimeStamp, TimeStamp )
     | KeyUp KeyCode
     | ConfigMsg Config.Msg
+
+
+type CurrentNote
+    = New
+    | Existing Int
 
 
 
@@ -60,8 +67,9 @@ init url =
       , paused = True
       , timeStamp = 0
       , remainingTime = 0
-      , currentNote = Note 0 ""
-      , notes = []
+      , newNote = Note 0 ""
+      , notes = Array.empty
+      , currentNote = New
       , noteSortOrder = OldestFirst
       , source = Source.Url url
       , config = Config.default
@@ -133,24 +141,24 @@ update msg model =
         SetPlayhead timeStamp ->
             ( model, Audio.setPlayhead ( "audio", timeStamp ) )
 
-        SetCurrentNoteText noteText ->
-            if model.currentNote.text == "" && noteText == " " then
+        SetNoteText current noteText ->
+            if model.newNote.text == "" && noteText == " " then
                 ( model, Cmd.none )
             else
                 let
-                    prevNote =
-                        model.currentNote
+                    note =
+                        model.newNote
                 in
-                    ( { model | currentNote = { prevNote | text = noteText } }
+                    ( { model | newNote = { note | text = noteText } }
                     , Cmd.none
                     )
 
-        SetCurrentNoteTime timeStamp ->
+        SetNewNoteTime timeStamp ->
             let
                 prevNote =
-                    model.currentNote
+                    model.newNote
             in
-                ( { model | currentNote = { prevNote | timeStamp = timeStamp } }
+                ( { model | newNote = { prevNote | timeStamp = timeStamp } }
                 , Cmd.none
                 )
 
@@ -162,27 +170,27 @@ update msg model =
                         , remainingTime = remainingTime
                     }
             in
-                if model.currentNote.text == "" then
-                    update (SetCurrentNoteTime timeStamp) newModel
+                if model.newNote.text == "" then
+                    update (SetNewNoteTime timeStamp) newModel
                 else
                     ( newModel, Cmd.none )
 
         AddNote newNote ->
-            ( { model | notes = newNote :: model.notes }, Cmd.none )
+            ( { model | notes = Array.push newNote model.notes }, Cmd.none )
 
         DeleteNote index ->
-            ( { model | notes = listRemove index model.notes }, Cmd.none )
+            ( { model | notes = arrayRemove index model.notes }, Cmd.none )
 
         KeyUp 13 ->
             -- Enter
-            if model.ready && not (String.isEmpty model.currentNote.text) then
-                update (AddNote model.currentNote)
-                    { model | currentNote = Note model.timeStamp "" }
+            if model.ready && not (String.isEmpty model.newNote.text) then
+                update (AddNote model.newNote)
+                    { model | newNote = Note model.timeStamp "" }
             else
                 ( model, Cmd.none )
 
         KeyUp keyCode ->
-            if model.ready && String.isEmpty model.currentNote.text then
+            if model.ready && String.isEmpty model.newNote.text then
                 case keyCode of
                     32 ->
                         -- Space
@@ -213,9 +221,23 @@ update msg model =
             ( { model | config = Config.update message model.config }, Cmd.none )
 
 
-listRemove : Int -> List a -> List a
-listRemove idx lst =
-    List.take idx lst ++ List.drop (idx + 1) lst
+arrayRemove : Int -> Array a -> Array a
+arrayRemove idx arr =
+    Array.append
+        (Array.slice 0 idx arr)
+        (Array.slice (idx + 1) (Array.length arr) arr)
+
+
+currentNoteText : Model -> String
+currentNoteText model =
+    case model.currentNote of
+        New ->
+            model.newNote.text
+
+        Existing index ->
+            Array.get index model.notes
+                |> Maybe.map .text
+                |> Maybe.withDefault ""
 
 
 
@@ -233,11 +255,11 @@ view locale model =
             [ Html.map ConfigMsg (Config.view locale model.config)
             , Audio.controls Seek PauseUnpause locale model.paused "50px"
             , h2 [] [ text (Ln.strings locale).allNotes ]
-            , (Note.input SetCurrentNoteText locale)
-                model.currentNote
+            , (Note.input (SetNoteText New) locale)
+                model.newNote
                 model.timeStamp
                 model.remainingTime
-            , if List.isEmpty model.notes then
+            , if Array.isEmpty model.notes then
                 text ""
               else
                 div []
@@ -246,12 +268,12 @@ view locale model =
                         , Button.attrs
                             [ id "clipboard-copy-button"
                             , attribute "data-clipboard-text"
-                                (Note.listToString model.notes)
+                                (Note.listToString <| Array.toList model.notes)
                             ]
                         ]
                         [ text (Ln.strings locale).copyToClipboard ]
                     , (NoteTable.view SetNoteSortOrder SetPlayhead locale)
-                        model.notes
+                        (Array.toList model.notes)
                         model.noteSortOrder
                     ]
             ]

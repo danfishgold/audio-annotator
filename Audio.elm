@@ -1,24 +1,24 @@
-port module Audio
-    exposing
-        ( SeekDirection(..)
-        , SeekSize(..)
-        , pauseUnpause
-        , paused
-        , played
-        , seek
-        , setPlayhead
-        , setUrl
-        , setFileSource
-        , timeStamp
-        , isReady
-        , controls
-        )
+port module Audio exposing
+    ( SeekDirection(..)
+    , SeekSize(..)
+    , controls
+    , isReady
+    , pauseUnpause
+    , paused
+    , played
+    , seek
+    , setFileSource
+    , setPlayhead
+    , setUrl
+    , timeStamp
+    )
 
-import Html exposing (Html, div, span, audio)
-import Html.Attributes exposing (id, dir, style)
-import Html.Events exposing (onClick)
 import Assets
+import Html exposing (Html, audio, div, span)
+import Html.Attributes exposing (dir, id, style)
+import Html.Events exposing (onClick)
 import TimeStamp exposing (TimeStamp)
+
 
 
 -- SEEK
@@ -86,6 +86,7 @@ controls seek pauseUnpause paused sz =
             , span [ onClick (seek Small Backward) ] [ Assets.rewind sz ]
             , if paused then
                 span [ onClick pauseUnpause ] [ Assets.play sz ]
+
               else
                 span [ onClick pauseUnpause ] [ Assets.pause sz ]
             , span [ onClick (seek Small Forward) ] [ Assets.fastForward sz ]

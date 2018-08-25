@@ -1,10 +1,10 @@
-module Config exposing (Config, default, Msg(..), update, view, localeSelect)
+module Config exposing (Config, Msg(..), default, localeSelect, update, view)
 
-import Html exposing (Html, div, span, h2, ul, li, text)
-import Html.Attributes exposing (value, style, selected)
-import Html.Events exposing (onClick)
-import Bootstrap.Form.Select as Select
 import Assets
+import Bootstrap.Form.Select as Select
+import Html exposing (Html, div, h2, li, span, text, ul)
+import Html.Attributes exposing (selected, style, value)
+import Html.Events exposing (onClick)
 import Localization as Ln exposing (Locale(..))
 
 
@@ -49,21 +49,19 @@ view locale config =
             text (Ln.strings locale |> .config |> fn)
 
         stringToInt =
-            String.toFloat >> Result.withDefault 0 >> floor
+            String.toFloat >> Maybe.withDefault 0 >> floor
 
         seekInput selectedVal options message =
             Select.select
                 [ Select.attrs
-                    [ style
-                        [ ( "display", "inline-block" )
-                        , ( "width", "auto" )
-                        ]
+                    [ style "display" "inline-block"
+                    , style "width" "auto"
                     ]
                 , Select.small
                 , Select.onChange (stringToInt >> message)
                 ]
                 (options
-                    |> List.map toString
+                    |> List.map Debug.toString
                     |> List.map
                         (\val ->
                             Select.item [ value val, selected <| val == selectedVal ]
@@ -72,32 +70,32 @@ view locale config =
                 )
 
         smallSeekInput =
-            seekInput (toString config.smallSeek)
+            seekInput (Debug.toString config.smallSeek)
                 [ 2, 3, 5, 10 ]
                 SetSmallSeek
 
         bigSeekInput =
-            seekInput (toString config.bigSeek)
+            seekInput (Debug.toString config.bigSeek)
                 [ 15, 30, 60, 120 ]
                 SetBigSeek
     in
-        div []
-            [ h2 [] [ localizedText .title ]
-            , ul []
-                [ li []
-                    [ localizedText .onLeftRightArrows
-                    , smallSeekInput
-                    , localizedText .seconds
-                    ]
-                , li []
-                    [ localizedText .onLeftRightButtons
-                    , bigSeekInput
-                    , localizedText .seconds
-                    ]
-                , li [] [ localizedText .onSpace ]
-                , li [] [ localizedText .noteWithBang ]
+    div []
+        [ h2 [] [ localizedText .title ]
+        , ul []
+            [ li []
+                [ localizedText .onLeftRightArrows
+                , smallSeekInput
+                , localizedText .seconds
                 ]
+            , li []
+                [ localizedText .onLeftRightButtons
+                , bigSeekInput
+                , localizedText .seconds
+                ]
+            , li [] [ localizedText .onSpace ]
+            , li [] [ localizedText .noteWithBang ]
             ]
+        ]
 
 
 localeSelect : Locale -> Html Msg

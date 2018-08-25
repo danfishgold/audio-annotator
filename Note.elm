@@ -1,12 +1,12 @@
-module Note exposing (Note, encode, decoder, input, listToString)
+module Note exposing (Note, decoder, encode, input, listToString)
 
-import Html exposing (Html, text)
-import Html.Attributes exposing (dir)
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.InputGroup as InputGroup
 import Bootstrap.Grid as Grid
 import Bootstrap.Grid.Col as Col
 import Bootstrap.Grid.Row as Row
+import Html exposing (Html, text)
+import Html.Attributes exposing (dir)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 import Localization as Ln exposing (Locale)
@@ -56,27 +56,27 @@ input setCurrentNoteText locale currentNote timeStamp remainingTime =
         remainingTimeStamp =
             remainingTime - currentNote.timeStamp + timeStamp
     in
-        Grid.row [ Row.middleXs ]
-            [ Grid.col [ Col.xs2 ] [ text (Ln.strings locale).newNote ]
-            , Grid.col [ Col.xs10 ]
-                [ InputGroup.config
-                    (InputGroup.text
-                        [ Input.onInput setCurrentNoteText
-                        , Input.value currentNote.text
-                        , Input.attrs [ Ln.dir locale ]
+    Grid.row [ Row.middleXs ]
+        [ Grid.col [ Col.xs2 ] [ text (Ln.strings locale).newNote ]
+        , Grid.col [ Col.xs10 ]
+            [ InputGroup.config
+                (InputGroup.text
+                    [ Input.onInput setCurrentNoteText
+                    , Input.value currentNote.text
+                    , Input.attrs [ Ln.dir locale ]
+                    ]
+                )
+                |> Ln.predecessors locale
+                    [ InputGroup.span []
+                        [ text <| TimeStamp.asString currentTimeStamp ]
+                    ]
+                |> Ln.successors locale
+                    [ InputGroup.span []
+                        [ text "-"
+                        , text <| TimeStamp.asString remainingTimeStamp
                         ]
-                    )
-                    |> Ln.predecessors locale
-                        [ InputGroup.span []
-                            [ text <| TimeStamp.asString currentTimeStamp ]
-                        ]
-                    |> Ln.successors locale
-                        [ InputGroup.span []
-                            [ text "-"
-                            , text <| TimeStamp.asString remainingTimeStamp
-                            ]
-                        ]
-                    |> InputGroup.attrs [ dir "ltr" ]
-                    |> InputGroup.view
-                ]
+                    ]
+                |> InputGroup.attrs [ dir "ltr" ]
+                |> InputGroup.view
             ]
+        ]

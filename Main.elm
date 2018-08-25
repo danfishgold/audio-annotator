@@ -1,19 +1,20 @@
 module Main exposing (main)
 
-import Html exposing (Html, program, div, h2, text)
-import Html.Attributes exposing (attribute, hidden, id)
+import Array exposing (Array)
+import Audio exposing (SeekDirection(..), SeekSize(..))
 import Bootstrap.Button as Button
 import Bootstrap.CDN as CDN
 import Bootstrap.Grid as Grid
-import Array exposing (Array)
-import Audio exposing (SeekDirection(..), SeekSize(..))
+import Browser.Events exposing (KeyCode)
 import Config exposing (Config)
-import Keyboard exposing (KeyCode)
+import Html exposing (Html, div, h2, program, text)
+import Html.Attributes exposing (attribute, hidden, id)
 import Localization as Ln exposing (Locale)
 import Note exposing (Note)
 import NoteTable exposing (SortOrder(..))
 import Source exposing (Source)
 import TimeStamp exposing (TimeStamp)
+
 
 
 --MODEL
@@ -135,7 +136,7 @@ update msg model =
                         Backward ->
                             -amount
             in
-                ( model, Audio.seek ( "audio", value ) )
+            ( model, Audio.seek ( "audio", value ) )
 
         SetPlayhead timeStamp ->
             ( model, Audio.setPlayhead ( "audio", timeStamp ) )
@@ -143,23 +144,24 @@ update msg model =
         SetNoteText _ noteText ->
             if model.newNote.text == "" && noteText == " " then
                 ( model, Cmd.none )
+
             else
                 let
                     note =
                         model.newNote
                 in
-                    ( { model | newNote = { note | text = noteText } }
-                    , Cmd.none
-                    )
+                ( { model | newNote = { note | text = noteText } }
+                , Cmd.none
+                )
 
         SetNewNoteTime timeStamp ->
             let
                 prevNote =
                     model.newNote
             in
-                ( { model | newNote = { prevNote | timeStamp = timeStamp } }
-                , Cmd.none
-                )
+            ( { model | newNote = { prevNote | timeStamp = timeStamp } }
+            , Cmd.none
+            )
 
         SetTimeStamp ( timeStamp, remainingTime ) ->
             let
@@ -169,10 +171,11 @@ update msg model =
                         , remainingTime = remainingTime
                     }
             in
-                if model.newNote.text == "" then
-                    update (SetNewNoteTime timeStamp) newModel
-                else
-                    ( newModel, Cmd.none )
+            if model.newNote.text == "" then
+                update (SetNewNoteTime timeStamp) newModel
+
+            else
+                ( newModel, Cmd.none )
 
         AddNote newNote ->
             ( { model | notes = Array.push newNote model.notes }, Cmd.none )
@@ -185,6 +188,7 @@ update msg model =
             if model.ready && not (String.isEmpty model.newNote.text) then
                 update (AddNote model.newNote)
                     { model | newNote = Note model.timeStamp "" }
+
             else
                 ( model, Cmd.none )
 
@@ -213,6 +217,7 @@ update msg model =
 
                     _ ->
                         ( model, Cmd.none )
+
             else
                 ( model, Cmd.none )
 
@@ -262,6 +267,7 @@ view locale model =
                 model.remainingTime
             , if Array.isEmpty model.notes then
                 text ""
+
               else
                 div []
                     [ Button.button

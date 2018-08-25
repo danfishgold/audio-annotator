@@ -1,13 +1,14 @@
 module NoteTable exposing (SortOrder(..), view)
 
+import Bootstrap.Button as Button
+import Bootstrap.Table as Table exposing (td, th, tr)
 import Html exposing (Html, text)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
-import Bootstrap.Button as Button
-import Bootstrap.Table as Table exposing (th, tr, td)
 import Localization as Ln exposing (Locale)
 import Note exposing (Note)
 import TimeStamp exposing (TimeStamp)
+
 
 
 -- ORDER
@@ -58,23 +59,23 @@ head setSortOrder locale order =
         localized fn =
             Ln.strings locale |> fn
     in
-        Table.thead []
-            [ tr []
-                [ th
-                    [ Table.cellAttr <| style [ Ln.textAlign locale ]
-                    , Table.cellAttr <| onClick <| setSortOrder <| opposite order
-                    ]
-                    [ text <| localized .timeStamp ++ " " ++ indicator order ]
-                , th
-                    [ Table.cellAttr <|
-                        style
-                            [ Ln.textAlign locale
-                            , ( "width", "100%" )
-                            ]
-                    ]
-                    [ text <| localized .note ]
+    Table.thead []
+        [ tr []
+            [ th
+                [ Table.cellAttr <| style [ Ln.textAlign locale ]
+                , Table.cellAttr <| onClick <| setSortOrder <| opposite order
                 ]
+                [ text <| localized .timeStamp ++ " " ++ indicator order ]
+            , th
+                [ Table.cellAttr <|
+                    style
+                        [ Ln.textAlign locale
+                        , ( "width", "100%" )
+                        ]
+                ]
+                [ text <| localized .note ]
             ]
+        ]
 
 
 row : (TimeStamp -> msg) -> Note -> Table.Row msg
@@ -83,26 +84,27 @@ row setPlayhead note =
         rowAttrs =
             if String.startsWith "!" note.text then
                 [ Table.rowInfo ]
+
             else
                 []
     in
-        tr rowAttrs
-            [ td []
-                [ Button.button
-                    [ Button.onClick (setPlayhead note.timeStamp)
-                    , Button.roleLink
-                    ]
-                    [ text <| TimeStamp.asString note.timeStamp ]
+    tr rowAttrs
+        [ td []
+            [ Button.button
+                [ Button.onClick (setPlayhead note.timeStamp)
+                , Button.roleLink
                 ]
-            , td
-                [ Table.cellAttr <|
-                    style
-                        [ ( "width", "100%" )
-                        , ( "vertical-align", "middle" )
-                        ]
-                ]
-                [ text note.text ]
+                [ text <| TimeStamp.asString note.timeStamp ]
             ]
+        , td
+            [ Table.cellAttr <|
+                style
+                    [ ( "width", "100%" )
+                    , ( "vertical-align", "middle" )
+                    ]
+            ]
+            [ text note.text ]
+        ]
 
 
 view : (SortOrder -> msg) -> (TimeStamp -> msg) -> Locale -> List Note -> SortOrder -> Html msg

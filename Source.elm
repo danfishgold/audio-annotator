@@ -1,14 +1,14 @@
-module Source exposing (Source(..), view, reload)
+module Source exposing (Source(..), reload, view)
 
-import Html exposing (Html, div, input, h2, text)
-import Html.Attributes exposing (type_, dir, accept, hidden, id)
-import Html.Events
+import Audio
 import Bootstrap.Button as Button
 import Bootstrap.ButtonGroup as ButtonGroup
 import Bootstrap.Form.Input as Input
 import Bootstrap.Form.InputGroup as InputGroup
+import Html exposing (Html, div, h2, input, text)
+import Html.Attributes exposing (accept, dir, hidden, id, type_)
+import Html.Events
 import Json.Decode as Json
-import Audio
 import Localization as Ln exposing (Locale)
 
 
@@ -23,12 +23,12 @@ view setSource locale source =
         localizedText fn =
             text (Ln.strings locale |> .source |> fn)
     in
-        div []
-            [ h2 [] [ localizedText .source ]
-            , localizedText .firstYouMustSupply
-            , selection setSource locale source
-            , input setSource locale source
-            ]
+    div []
+        [ h2 [] [ localizedText .source ]
+        , localizedText .firstYouMustSupply
+        , selection setSource locale source
+        , input setSource locale source
+        ]
 
 
 reload : Source -> Cmd msg
@@ -54,11 +54,11 @@ selection setSource locale source =
         isFile =
             source == File
     in
-        ButtonGroup.radioButtonGroup
-            [ ButtonGroup.small, ButtonGroup.attrs [ dir "ltr" ] ]
-            [ radioButton isFile (setSource File) (localizedText .localFile)
-            , radioButton (not isFile) (setSource <| Url "") (localizedText .audioUrl)
-            ]
+    ButtonGroup.radioButtonGroup
+        [ ButtonGroup.small, ButtonGroup.attrs [ dir "ltr" ] ]
+        [ radioButton isFile (setSource File) (localizedText .localFile)
+        , radioButton (not isFile) (setSource <| Url "") (localizedText .audioUrl)
+        ]
 
 
 radioButton : Bool -> msg -> Html msg -> ButtonGroup.RadioButtonItem msg
@@ -66,6 +66,7 @@ radioButton selected msg content =
     ButtonGroup.radioButton selected
         (if selected then
             [ Button.primary ]
+
          else
             [ Button.secondary, Button.onClick msg ]
         )

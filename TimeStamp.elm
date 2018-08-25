@@ -12,20 +12,22 @@ asString seconds =
             seconds // 3600
 
         m =
-            (seconds % 3600) // 60
+            modBy 3600 seconds // 60
 
         s =
-            seconds % 60
+            modBy 60 seconds
     in
-        if h == 0 then
-            toString m ++ ":" ++ twoDigit s
-        else
-            toString h ++ ":" ++ twoDigit m ++ ":" ++ twoDigit s
+    if h == 0 then
+        String.fromInt m ++ ":" ++ twoDigit s
+
+    else
+        String.fromInt h ++ ":" ++ twoDigit m ++ ":" ++ twoDigit s
 
 
 twoDigit : TimeStamp -> String
 twoDigit n =
     if n < 10 then
-        "0" ++ toString n
+        "0" ++ String.fromInt n
+
     else
-        toString n
+        String.fromInt n

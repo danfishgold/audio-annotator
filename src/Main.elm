@@ -129,10 +129,7 @@ keyboardEventDecoder toMsg =
                         Json.succeed (toMsg Right)
 
                     otherKey ->
-                        Json.fail <|
-                            Debug.log "error" <|
-                                "Unrecognized key code: "
-                                    ++ otherKey
+                        Json.fail <| "Unrecognized key code: '" ++ otherKey ++ "'"
             )
 
 

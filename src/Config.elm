@@ -61,7 +61,7 @@ view locale config =
                 , Select.onChange (stringToInt >> message)
                 ]
                 (options
-                    |> List.map Debug.toString
+                    |> List.map String.fromInt
                     |> List.map
                         (\val ->
                             Select.item [ value val, selected <| val == selectedVal ]
@@ -70,12 +70,12 @@ view locale config =
                 )
 
         smallSeekInput =
-            seekInput (Debug.toString config.smallSeek)
+            seekInput (String.fromInt config.smallSeek)
                 [ 2, 3, 5, 10 ]
                 SetSmallSeek
 
         bigSeekInput =
-            seekInput (Debug.toString config.bigSeek)
+            seekInput (String.fromInt config.bigSeek)
                 [ 15, 30, 60, 120 ]
                 SetBigSeek
     in

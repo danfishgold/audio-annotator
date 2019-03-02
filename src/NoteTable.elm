@@ -62,16 +62,13 @@ head setSortOrder locale order =
     Table.thead []
         [ tr []
             [ th
-                [ Table.cellAttr <| style [ Ln.textAlign locale ]
+                [ Table.cellAttr <| Ln.textAlign locale
                 , Table.cellAttr <| onClick <| setSortOrder <| opposite order
                 ]
                 [ text <| localized .timeStamp ++ " " ++ indicator order ]
             , th
-                [ Table.cellAttr <|
-                    style
-                        [ Ln.textAlign locale
-                        , ( "width", "100%" )
-                        ]
+                [ Table.cellAttr <| Ln.textAlign locale
+                , Table.cellAttr <| style "width" "100%"
                 ]
                 [ text <| localized .note ]
             ]
@@ -97,11 +94,8 @@ row setPlayhead note =
                 [ text <| TimeStamp.asString note.timeStamp ]
             ]
         , td
-            [ Table.cellAttr <|
-                style
-                    [ ( "width", "100%" )
-                    , ( "vertical-align", "middle" )
-                    ]
+            [ Table.cellAttr <| style "width" "100%"
+            , Table.cellAttr <| style "vertical-align" "middle"
             ]
             [ text note.text ]
         ]

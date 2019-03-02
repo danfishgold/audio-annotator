@@ -14,7 +14,7 @@ port module Audio exposing
     )
 
 import Assets
-import Html exposing (Html, audio, div, span)
+import Html exposing (Attribute, Html, audio, div, span)
 import Html.Attributes exposing (dir, id, style)
 import Html.Events exposing (onClick)
 import TimeStamp exposing (TimeStamp)
@@ -74,33 +74,35 @@ type alias SeekMsg msg =
 
 
 controls : SeekMsg msg -> msg -> Bool -> String -> Html msg
-controls seek pauseUnpause paused sz =
+controls onSeek onPauseUnpause isPaused sz =
     div []
         [ audio [ id "audio", Html.Attributes.controls False ] []
         , div
-            [ dir "ltr"
-            , id "controls"
-            , style (( "text-align", "center" ) :: noUserSelect)
-            ]
-            [ span [ onClick (seek Big Backward) ] [ Assets.previous sz ]
-            , span [ onClick (seek Small Backward) ] [ Assets.rewind sz ]
-            , if paused then
-                span [ onClick pauseUnpause ] [ Assets.play sz ]
+            ([ dir "ltr"
+             , id "controls"
+             , style "text-align" "center"
+             ]
+                ++ noUserSelect
+            )
+            [ span [ onClick (onSeek Big Backward) ] [ Assets.previous sz ]
+            , span [ onClick (onSeek Small Backward) ] [ Assets.rewind sz ]
+            , if isPaused then
+                span [ onClick onPauseUnpause ] [ Assets.play sz ]
 
               else
-                span [ onClick pauseUnpause ] [ Assets.pause sz ]
-            , span [ onClick (seek Small Forward) ] [ Assets.fastForward sz ]
-            , span [ onClick (seek Big Forward) ] [ Assets.next sz ]
+                span [ onClick onPauseUnpause ] [ Assets.pause sz ]
+            , span [ onClick (onSeek Small Forward) ] [ Assets.fastForward sz ]
+            , span [ onClick (onSeek Big Forward) ] [ Assets.next sz ]
             ]
         ]
 
 
-noUserSelect : List ( String, String )
+noUserSelect : List (Html.Attribute msg)
 noUserSelect =
-    [ ( "-webkit-touch-callout", "none" )
-    , ( "-webkit-user-select", "none" )
-    , ( "-khtml-user-select", "none" )
-    , ( "-moz-user-select", "none" )
-    , ( "-ms-user-select", "none" )
-    , ( "user-select", "none" )
+    [ style "-webkit-touch-callout" "none"
+    , style "-webkit-user-select" "none"
+    , style "-khtml-user-select" "none"
+    , style "-moz-user-select" "none"
+    , style "-ms-user-select" "none"
+    , style "user-select" "none"
     ]

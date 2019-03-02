@@ -7,7 +7,6 @@
 </head>
 
 <body>
-  <div id="main"></div>
   <style>
     svg:hover path {
       fill: coral;
@@ -16,9 +15,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js"></script>
   <script src="elm.js"></script>
   <script>
+    var app = Elm.Main.init();
 
-    var node = document.getElementById('main')
-    var app = Elm.Main.embed(node)
 
     app.ports.pauseUnpause.subscribe(function (audioId) {
       var audio = document.getElementById(audioId)

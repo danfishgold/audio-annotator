@@ -5,10 +5,12 @@ import Audio exposing (SeekDirection(..), SeekSize(..))
 import Bootstrap.Button as Button
 import Bootstrap.CDN as CDN
 import Bootstrap.Grid as Grid
-import Browser.Events exposing (KeyCode)
+import Browser exposing (document)
+import Browser.Events
 import Config exposing (Config)
-import Html exposing (Html, div, h2, program, text)
+import Html exposing (Html, div, h2, text)
 import Html.Attributes exposing (attribute, hidden, id)
+import Json.Decode as Json
 import Localization as Ln exposing (Locale)
 import Note exposing (Note)
 import NoteTable exposing (SortOrder(..))
@@ -48,7 +50,7 @@ type Msg
     | AddNote Note
     | DeleteNote Int
     | SetTimeStamp ( TimeStamp, TimeStamp )
-    | KeyUp KeyCode
+    | KeyUp Key
     | ConfigMsg Config.Msg
 
 
@@ -61,8 +63,8 @@ type CurrentNote
 --INIT
 
 
-init : String -> ( Model, Cmd Msg )
-init url =
+init : String -> () -> ( Model, Cmd Msg )
+init url () =
     ( { ready = False
       , paused = True
       , timeStamp = 0
@@ -85,12 +87,53 @@ init url =
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.batch
-        [ Keyboard.ups KeyUp
+        [ Browser.Events.onKeyUp (keyboardEventDecoder KeyUp)
         , Audio.timeStamp SetTimeStamp
         , Audio.isReady IsReady
         , Audio.paused (always Paused)
         , Audio.played (always Unpaused)
         ]
+
+
+type Key
+    = Enter
+    | Space
+    | Up
+    | Down
+    | Left
+    | Right
+
+
+keyboardEventDecoder : (Key -> msg) -> Json.Decoder msg
+keyboardEventDecoder toMsg =
+    Json.field "key" Json.string
+        |> Json.andThen
+            (\key ->
+                case key of
+                    "Enter" ->
+                        Json.succeed (toMsg Enter)
+
+                    " " ->
+                        Json.succeed (toMsg Space)
+
+                    "ArrowUp" ->
+                        Json.succeed (toMsg Up)
+
+                    "ArrowDown" ->
+                        Json.succeed (toMsg Down)
+
+                    "ArrowLeft" ->
+                        Json.succeed (toMsg Left)
+
+                    "ArrowRight" ->
+                        Json.succeed (toMsg Right)
+
+                    otherKey ->
+                        Json.fail <|
+                            Debug.log "error" <|
+                                "Unrecognized key code: "
+                                    ++ otherKey
+            )
 
 
 
@@ -183,8 +226,7 @@ update msg model =
         DeleteNote index ->
             ( { model | notes = arrayRemove index model.notes }, Cmd.none )
 
-        KeyUp 13 ->
-            -- Enter
+        KeyUp Enter ->
             if model.ready && not (String.isEmpty model.newNote.text) then
                 update (AddNote model.newNote)
                     { model | newNote = Note model.timeStamp "" }
@@ -192,27 +234,22 @@ update msg model =
             else
                 ( model, Cmd.none )
 
-        KeyUp keyCode ->
+        KeyUp someKey ->
             if model.ready && String.isEmpty model.newNote.text then
-                case keyCode of
-                    32 ->
-                        -- Space
+                case someKey of
+                    Space ->
                         update PauseUnpause model
 
-                    39 ->
-                        -- Right
+                    Right ->
                         update (Seek Small Forward) model
 
-                    37 ->
-                        -- Left
+                    Left ->
                         update (Seek Small Backward) model
 
-                    38 ->
-                        -- Up
+                    Up ->
                         update (Seek Big Forward) model
 
-                    40 ->
-                        -- Down
+                    Down ->
                         update (Seek Big Backward) model
 
                     _ ->
@@ -248,8 +285,13 @@ currentNoteText model =
 -- VIEW
 
 
-view : Locale -> Model -> Html Msg
+view : Locale -> Model -> Browser.Document Msg
 view locale model =
+    { title = (Ln.strings locale).title, body = [ body locale model ] }
+
+
+body : Locale -> Model -> Html Msg
+body locale model =
     Grid.container [ Ln.dir locale ]
         [ CDN.stylesheet
         , Html.map ConfigMsg (Config.localeSelect locale)
@@ -294,9 +336,9 @@ view locale model =
 -- MAIN
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    program
+    document
         { init = init ""
         , subscriptions = subscriptions
         , update = update

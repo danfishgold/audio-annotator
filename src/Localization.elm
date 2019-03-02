@@ -50,18 +50,19 @@ dir locale =
             Html.Attributes.dir "ltr"
 
 
-textAlign : Locale -> ( String, String )
+textAlign : Locale -> Html.Attribute msg
 textAlign locale =
     case locale of
         Hebrew ->
-            ( "text-align", "right" )
+            Html.Attributes.style "text-align" "right"
 
         English ->
-            ( "text-align", "left" )
+            Html.Attributes.style "text-align" "left"
 
 
 type alias Strings =
-    { fileUrl : String
+    { title : String
+    , fileUrl : String
     , newNote : String
     , allNotes : String
     , timeStamp : String
@@ -102,7 +103,8 @@ strings locale =
 
 hebrewStrings : Strings
 hebrewStrings =
-    { fileUrl = "לינק לקובץ"
+    { title = "מעיר מדיה"
+    , fileUrl = "לינק לקובץ"
     , newNote = "הערה חדשה"
     , allNotes = "הערות"
     , timeStamp = "זמן"
@@ -127,7 +129,8 @@ hebrewStrings =
 
 englishStrings : Strings
 englishStrings =
-    { fileUrl = "File URL"
+    { title = "Audio Annotator"
+    , fileUrl = "File URL"
     , newNote = "New note"
     , allNotes = "Notes"
     , timeStamp = "Time"

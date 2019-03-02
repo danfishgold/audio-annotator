@@ -292,7 +292,7 @@ view locale model =
 
 body : Locale -> Model -> Html Msg
 body locale model =
-    Grid.container [ Ln.dir locale ]
+    Grid.container [ Ln.dir locale, Ln.textAlign locale ]
         [ CDN.stylesheet
         , Html.map ConfigMsg (Config.localeSelect locale)
         , Source.view SetSource locale model.source

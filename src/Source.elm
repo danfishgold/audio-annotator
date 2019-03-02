@@ -68,7 +68,7 @@ radioButton selected msg content =
             [ Button.primary ]
 
          else
-            [ Button.secondary, Button.onClick msg ]
+            [ Button.outlineSecondary, Button.onClick msg ]
         )
         [ content ]
 

@@ -1,9 +1,9 @@
-<!doctype html>
+<!DOCTYPE html>
 
 <head>
   <title>Audio Annotator</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8" />
 </head>
 
 <body>
@@ -17,80 +17,76 @@
   <script>
     var app = Elm.Main.init();
 
-
-    app.ports.pauseUnpause.subscribe(function (audioId) {
-      var audio = document.getElementById(audioId)
+    app.ports.pauseUnpause.subscribe(function(audioId) {
+      var audio = document.getElementById(audioId);
       if (audio.paused) {
-        audio.play()
+        audio.play();
       } else {
-        audio.pause()
+        audio.pause();
       }
-    })
+    });
 
-    app.ports.seek.subscribe(function (audioIdAndAmount) {
-      var audioId = audioIdAndAmount[0]
-      var amount = audioIdAndAmount[1]
-      var audio = document.getElementById(audioId)
-      audio.currentTime += amount
-    })
+    app.ports.seek.subscribe(function(audioIdAndAmount) {
+      var audioId = audioIdAndAmount[0];
+      var amount = audioIdAndAmount[1];
+      var audio = document.getElementById(audioId);
+      audio.currentTime += amount;
+    });
 
-    app.ports.setPlayhead.subscribe(function (audioIdAndTimeStamp) {
-      var audioId = audioIdAndTimeStamp[0]
-      var timeStamp = audioIdAndTimeStamp[1]
-      var audio = document.getElementById(audioId)
-      audio.currentTime = timeStamp
-    })
+    app.ports.setPlayhead.subscribe(function(audioIdAndTimeStamp) {
+      var audioId = audioIdAndTimeStamp[0];
+      var timeStamp = audioIdAndTimeStamp[1];
+      var audio = document.getElementById(audioId);
+      audio.currentTime = timeStamp;
+    });
 
+    app.ports.setUrl.subscribe(function(audioIdAndUrl) {
+      var audioId = audioIdAndUrl[0];
+      var url = audioIdAndUrl[1];
+      var audio = document.getElementById(audioId);
+      initializeAudioWithSource(audio, url);
+    });
 
-    app.ports.setUrl.subscribe(function (audioIdAndUrl) {
-      var audioId = audioIdAndUrl[0]
-      var url = audioIdAndUrl[1]
-      var audio = document.getElementById(audioId)
-      initializeAudioWithSource(audio, url)
-    })
+    app.ports.setFileSource.subscribe(function(fileInputAndAudio) {
+      var input = document.getElementById(fileInputAndAudio[0]);
+      var audio = document.getElementById(fileInputAndAudio[1]);
 
-    app.ports.setFileSource.subscribe(function (fileInputAndAudio) {
-      var input = document.getElementById(fileInputAndAudio[0])
-      var audio = document.getElementById(fileInputAndAudio[1])
-
-      var file = input.files[0]
+      var file = input.files[0];
       if (input.files && file) {
-        var reader = new FileReader()
-        reader.onload = function (e) {
-          initializeAudioWithSource(audio, e.target.result)
-        }
-        reader.readAsDataURL(file)
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          initializeAudioWithSource(audio, e.target.result);
+        };
+        reader.readAsDataURL(file);
       }
-    })
+    });
 
     function initializeAudioWithSource(audio, src) {
-      audio.src = src
+      audio.src = src;
 
-      audio.ontimeupdate = function () {
-        var time = Math.floor(audio.currentTime)
-        var duration = Math.floor(audio.duration)
-        app.ports.timeStamp.send([time, duration - time])
-      }
+      audio.ontimeupdate = function() {
+        var time = Math.floor(audio.currentTime);
+        var duration = Math.floor(audio.duration);
+        app.ports.timeStamp.send([time, duration - time]);
+      };
 
-      audio.onloadedmetadata = function () {
-        app.ports.isReady.send(true)
-      }
+      audio.onloadedmetadata = function() {
+        app.ports.isReady.send(true);
+      };
 
-      audio.onerror = function () {
-        app.ports.isReady.send(false)
-      }
+      audio.onerror = function() {
+        app.ports.isReady.send(false);
+      };
 
-      audio.onpause = function () {
-        app.ports.paused.send(null)
-      }
+      audio.onpause = function() {
+        app.ports.paused.send(null);
+      };
 
-      audio.onplay = function () {
-        app.ports.played.send(null)
-      }
+      audio.onplay = function() {
+        app.ports.played.send(null);
+      };
     }
 
-    var clipboard = new Clipboard('#clipboard-copy-button')
-
-
+    var clipboard = new Clipboard("#clipboard-copy-button");
   </script>
 </body>
